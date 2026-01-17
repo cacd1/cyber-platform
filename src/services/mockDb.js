@@ -10,6 +10,7 @@ const INITIAL_REPS = [
 ];
 
 const INITIAL_SUBJECTS = [
+    { id: 'notifications', name: 'التبليغات', nameEn: 'Notifications' },
     { id: 'programming', name: 'البرمجة', nameEn: 'Programming Structured' },
     { id: 'cs', name: 'علوم الحاسوب', nameEn: 'Computer Science' },
     { id: 'ethics', name: 'أخلاقيات', nameEn: 'Ethics & Laws' },

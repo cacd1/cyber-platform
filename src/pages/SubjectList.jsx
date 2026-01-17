@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Book, Code, Globe, Scale, Users, FileText, Hash } from 'lucide-react';
+import { Book, Code, Globe, Scale, Users, FileText, Hash, Bell } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { useAuth } from '../context/AuthContext';
 import { mockDb } from '../services/mockDb';
 import { dbService } from '../services/db';
 
 const ICONS = {
+    notifications: Bell,
     programming: Code,
     cs: Globe,
     ethics: Scale,
