@@ -73,7 +73,7 @@ export const Home = () => {
                     طلاب الامن السيبراني مرحله اولى
                 </h1>
                 <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto font-medium dark:font-normal">
-                    First Year Cybersecurity Students Platform
+                    منصة تعلم - Learning Platform
                 </p>
             </motion.div>
 
