@@ -74,6 +74,54 @@ export const dbService = {
         }
     },
 
+    // Announcements
+    getAnnouncements: async () => {
+        try {
+            const q = query(
+                collection(db, 'announcements'),
+                // Order by date desc? We can sort client side if needed or add orderBy
+            );
+            const querySnapshot = await getDocs(q);
+            return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } catch (error) {
+            console.error("Error fetching announcements:", error);
+            return [];
+        }
+    },
+
+    addAnnouncement: async (text, createdBy) => {
+        try {
+            const docRef = await addDoc(collection(db, 'announcements'), {
+                text,
+                createdBy,
+                createdAt: new Date().toISOString()
+            });
+            return { id: docRef.id, text, createdBy, createdAt: new Date().toISOString() };
+        } catch (error) {
+            console.error("Error adding announcement:", error);
+            throw error;
+        }
+    },
+
+    deleteAnnouncement: async (id) => {
+        try {
+            await deleteDoc(doc(db, 'announcements', id));
+        } catch (error) {
+            console.error("Error deleting announcement:", error);
+            throw error;
+        }
+    },
+
+    updateAnnouncement: async (id, text) => {
+        try {
+            const docRef = doc(db, 'announcements', id);
+            await updateDoc(docRef, { text });
+        } catch (error) {
+            console.error("Error updating announcement:", error);
+            throw error;
+        }
+    },
+
     // Convert file to Base64 (for Firestore storage)
     fileToBase64: (file) => {
         return new Promise((resolve, reject) => {

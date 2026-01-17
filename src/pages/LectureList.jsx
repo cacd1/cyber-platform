@@ -37,6 +37,9 @@ export const LectureList = () => {
     const [youtubeInputs, setYoutubeInputs] = useState({});
     const [noteInputs, setNoteInputs] = useState({});
 
+    // Renaming removed to restore stability
+
+
     const subject = mockDb.getSubjects().find(s => s.id === subjectId);
 
     // Determine who we're viewing content for:
@@ -48,6 +51,7 @@ export const LectureList = () => {
     const canEdit = !!user;
 
     useEffect(() => {
+        window.scrollTo(0, 0); // Scroll to top on mount
         const fetchLectures = async () => {
             if (effectiveRepId) {
                 try {
@@ -60,6 +64,8 @@ export const LectureList = () => {
         };
         fetchLectures();
     }, [subjectId, effectiveRepId]);
+
+
 
     const handleAddLecture = async (e) => {
         e.preventDefault();

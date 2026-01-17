@@ -27,6 +27,7 @@ export const SubjectList = () => {
     const effectiveRepId = user ? user.id : activeRepId;
 
     useEffect(() => {
+        window.scrollTo(0, 0);
         const fetchCounts = async () => {
             if (effectiveRepId) {
                 try {
