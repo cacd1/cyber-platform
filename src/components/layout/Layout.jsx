@@ -97,6 +97,12 @@ export const Layout = ({ children }) => {
                     </Button>
                 </form>
             </Modal>
+            {/* Footer */}
+            <div className="fixed bottom-2 left-0 right-0 text-center z-50 pointer-events-none">
+                <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-600 font-cyber opacity-70">
+                    نظام الذكاء الاصطناعي قيد التطوير
+                </p>
+            </div>
         </div>
     );
 };

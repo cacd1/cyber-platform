@@ -456,7 +456,7 @@ export const LectureList = () => {
                                                                     <div className="w-full max-w-[450px] aspect-video rounded-lg overflow-hidden border border-white/10 shadow-lg relative bg-black">
                                                                         <iframe
                                                                             src={`https://www.youtube.com/embed/${item.videoId}`}
-                                                                            className="w-full h-full pointer-events-none"
+                                                                            className="w-full h-full"
                                                                             title="YouTube video"
                                                                             allowFullScreen
                                                                         />

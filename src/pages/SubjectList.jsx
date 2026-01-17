@@ -1,9 +1,11 @@
+import { useState, useEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Book, Code, Globe, Scale, Users, FileText, Hash } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { useAuth } from '../context/AuthContext';
 import { mockDb } from '../services/mockDb';
+import { dbService } from '../services/db';
 
 const ICONS = {
     programming: Code,
@@ -19,9 +21,30 @@ export const SubjectList = () => {
     const { hasAccessCode, accessCode, user, activeRepId } = useAuth();
     const navigate = useNavigate();
     const subjects = mockDb.getSubjects();
+    const [lectureCounts, setLectureCounts] = useState({});
 
     // Determine which rep's content to show
     const effectiveRepId = user ? user.id : activeRepId;
+
+    useEffect(() => {
+        const fetchCounts = async () => {
+            if (effectiveRepId) {
+                try {
+                    // Fetch all lectures for this rep to count them by subject
+                    const allLectures = await dbService.getAllLecturesForRep(effectiveRepId);
+
+                    const counts = {};
+                    subjects.forEach(sub => {
+                        counts[sub.id] = allLectures.filter(l => l.subjectId === sub.id).length;
+                    });
+                    setLectureCounts(counts);
+                } catch (error) {
+                    console.error("Failed to fetch lecture counts", error);
+                }
+            }
+        };
+        fetchCounts();
+    }, [effectiveRepId]);
 
     // Allow access if student has code OR if representative is logged in
     if (!hasAccessCode && !user) {
@@ -65,7 +88,8 @@ export const SubjectList = () => {
             >
                 {subjects.map((sub) => {
                     const Icon = ICONS[sub.id] || Book;
-                    const lectureCount = effectiveRepId ? mockDb.getLectureCount(sub.id, effectiveRepId) : 0;
+                    // Use the count from state
+                    const count = lectureCounts[sub.id] || 0;
                     return (
                         <motion.div key={sub.id} variants={item}>
                             <Card
@@ -80,7 +104,7 @@ export const SubjectList = () => {
                                     <h3 className="text-xl font-bold text-white mb-1">{sub.name}</h3>
                                     <p className="text-sm text-gray-400 font-cyber">{sub.nameEn}</p>
                                     <p className="text-xs text-cyber/70 mt-2">
-                                        {lectureCount > 0 ? `${lectureCount} محاضرة` : 'لا توجد محاضرات'}
+                                        {count > 0 ? `${count} محاضرة` : 'لا توجد محاضرات'}
                                     </p>
                                 </div>
                             </Card>

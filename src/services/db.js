@@ -27,6 +27,20 @@ export const dbService = {
         }
     },
 
+    getAllLecturesForRep: async (repId) => {
+        try {
+            const q = query(
+                collection(db, 'lectures'),
+                where('createdBy', '==', repId)
+            );
+            const querySnapshot = await getDocs(q);
+            return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        } catch (error) {
+            console.error("Error fetching all lectures for rep:", error);
+            return [];
+        }
+    },
+
     addLecture: async (lectureData) => {
         try {
             const docRef = await addDoc(collection(db, 'lectures'), {

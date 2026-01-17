@@ -69,7 +69,7 @@ export const Home = () => {
                 animate={{ y: 0, opacity: 1 }}
                 className="text-center mb-16"
             >
-                <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-700 dark:from-cyber dark:via-white dark:to-cyber-dim mb-4 drop-shadow-sm dark:drop-shadow-[0_0_15px_rgba(0,240,255,0.3)]">
+                <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-700 dark:from-cyber dark:via-white dark:to-cyber-dim mb-4 drop-shadow-sm dark:drop-shadow-[0_0_15px_rgba(0,240,255,0.3)] mt-12 md:mt-0">
                     طلاب الامن السيبراني مرحله اولى
                 </h1>
                 <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto font-medium dark:font-normal">
