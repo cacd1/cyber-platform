@@ -356,15 +356,44 @@ export const LectureList = () => {
                                                                             >
                                                                                 <FileText size={20} />
                                                                             </a>
-                                                                            <a
-                                                                                href={item.url}
-                                                                                download={item.name}
-                                                                                className="p-3 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-xl transition-colors"
+                                                                            <button
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation(); // Prevent card expansion
+                                                                                    // Generic download handler for all browsers
+                                                                                    try {
+                                                                                        // 1. Convert Base64 directly to Blob
+                                                                                        const byteCharacters = atob(item.url.split(',')[1]);
+                                                                                        const byteNumbers = new Array(byteCharacters.length);
+                                                                                        for (let i = 0; i < byteCharacters.length; i++) {
+                                                                                            byteNumbers[i] = byteCharacters.charCodeAt(i);
+                                                                                        }
+                                                                                        const byteArray = new Uint8Array(byteNumbers);
+                                                                                        const blob = new Blob([byteArray], { type: item.mimeType });
+
+                                                                                        // 2. Create Object URL
+                                                                                        const url = window.URL.createObjectURL(blob);
+
+                                                                                        // 3. Create temp link and click
+                                                                                        const link = document.createElement('a');
+                                                                                        link.href = url;
+                                                                                        link.download = item.name;
+                                                                                        document.body.appendChild(link);
+                                                                                        link.click();
+
+                                                                                        // 4. Cleanup
+                                                                                        document.body.removeChild(link);
+                                                                                        window.URL.revokeObjectURL(url);
+                                                                                    } catch (err) {
+                                                                                        console.error("Download failed", err);
+                                                                                        alert("فشل التحميل. يرجى المحاولة مرة أخرى.");
+                                                                                    }
+                                                                                }}
+                                                                                className="p-3 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-xl transition-colors cursor-pointer"
                                                                                 title="تحميل الملف"
                                                                             >
                                                                                 <ChevronDown size={20} className="rotate-180? no" />
                                                                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
-                                                                            </a>
+                                                                            </button>
                                                                             {canEdit && (
                                                                                 <button
                                                                                     onPointerDown={(e) => e.stopPropagation()}

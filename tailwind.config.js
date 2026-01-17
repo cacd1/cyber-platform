@@ -27,8 +27,8 @@ export default {
                 'cyber-grid': "url('https://grainy-gradients.vercel.app/noise.svg')",
             },
             fontFamily: {
-                cyber: ['Orbitron', 'sans-serif'],
-                body: ['Inter', 'sans-serif']
+                cyber: ['Cairo', 'Orbitron', 'sans-serif'],
+                body: ['Cairo', 'Inter', 'sans-serif']
             },
             animation: {
                 'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
