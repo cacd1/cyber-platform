@@ -23,7 +23,6 @@ function App() {
               <Route path="/course1" element={<SubjectList />} />
               <Route path="/course1/:subjectId" element={<LectureList />} />
               <Route path="/course1/:subjectId" element={<LectureList />} />
-              <Route path="/verify-db" element={<DataCheck />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Layout>
