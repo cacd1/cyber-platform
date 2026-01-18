@@ -7,7 +7,7 @@ import { Button } from '../ui/Button';
 
 export const HamburgerMenu = ({ onLoginClick }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const { user, logout, hasAccessCode, exitCode, enterCode } = useAuth(); // We might need a way to trigger "Switch Code" from here
+    const { user, logout, hasAccessCode, exitCode, enterCode } = useAuth();
     const { theme, toggleTheme } = useTheme();
 
     const toggleOpen = () => setIsOpen(!isOpen);
@@ -24,9 +24,6 @@ export const HamburgerMenu = ({ onLoginClick }) => {
     };
 
     const handleSwitchCode = () => {
-        // This is tricky without a global modal context or passing a handler
-        // Ideally we should open the enter code modal again.
-        // For now, let's just exit code and let the user re-enter on the home page.
         exitCode();
         setIsOpen(false);
     };

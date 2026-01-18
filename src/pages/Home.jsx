@@ -16,9 +16,6 @@ export const Home = () => {
     const [error, setError] = useState('');
 
     const handleCourse1Click = () => {
-        // If already has code, go directly? Or ask to confirm?
-        // SOP says "Switch Access Code" is an option.
-        // Usually if they have a code, let them in.
         if (hasAccessCode) {
             navigate('/course1');
         } else {
