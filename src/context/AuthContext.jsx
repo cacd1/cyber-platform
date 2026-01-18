@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }) => {
                         localStorage.setItem('activeRepId', id);
                     }
                 } catch (e) {
-                    console.error("Error resolving code:", e);
+                    // Silent fail for code resolution
                 }
             } else if (!user && !accessCode) {
                 setActiveRepId(null);

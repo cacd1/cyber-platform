@@ -58,7 +58,7 @@ export const LectureList = () => {
                     const data = await dbService.getLectures(subjectId, effectiveRepId);
                     setLectures(data.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)));
                 } catch (error) {
-                    console.error("Failed to fetch lectures", error);
+                    // Error fetching lectures
                 }
             }
         };
