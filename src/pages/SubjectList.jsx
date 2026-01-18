@@ -5,6 +5,7 @@ import { Book, Code, Globe, Scale, Users, FileText, Hash, Bell } from 'lucide-re
 import { Card } from '../components/ui/Card';
 import { useAuth } from '../context/AuthContext';
 import { dbService } from '../services/db';
+import { SUBJECTS } from '../constants';
 
 const ICONS = {
     programming: Code,
@@ -15,16 +16,6 @@ const ICONS = {
     math: Hash,
     arabic: FileText
 };
-
-const SUBJECTS = [
-    { id: 'intro', name: 'أساسيات الحاسوب', nameEn: 'Computer Fundamentals' },
-    { id: 'programming', name: 'برمجة مهيكلة', nameEn: 'Structured Programming' },
-    { id: 'math', name: 'رياضيات', nameEn: 'Mathematics' },
-    { id: 'cs', name: 'أساسيات أمن سيبراني', nameEn: 'User Security Fundamentals' },
-    { id: 'ethics', name: 'أخلاقيات المهنة', nameEn: 'Professional Ethics' },
-    { id: 'rights', name: 'حقوق الإنسان', nameEn: 'Human Rights' },
-    { id: 'arabic', name: 'لغة عربية', nameEn: 'Arabic Language' }
-];
 
 export const SubjectList = () => {
     const { hasAccessCode, accessCode, user, activeRepId } = useAuth();

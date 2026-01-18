@@ -8,7 +8,7 @@ import { Modal } from '../components/ui/Modal';
 import { Input } from '../components/ui/Input';
 import { useAuth } from '../context/AuthContext';
 import { dbService } from '../services/db';
-import { mockDb } from '../services/mockDb'; // Keep for subjects static data
+import { SUBJECTS } from '../constants';
 
 // Helper to extract YouTube video ID from URL
 const extractYoutubeId = (url) => {
@@ -40,7 +40,7 @@ export const LectureList = () => {
     // Renaming removed to restore stability
 
 
-    const subject = mockDb.getSubjects().find(s => s.id === subjectId);
+    const subject = SUBJECTS.find(s => s.id === subjectId);
 
     // Determine who we're viewing content for:
     // - If Rep is logged in, use their ID (they only edit their own content)
