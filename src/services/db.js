@@ -9,6 +9,8 @@ import {
     query,
     where
 } from 'firebase/firestore';
+import { storage } from '../lib/firebase';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 
 export const dbService = {
     // Lectures
@@ -122,13 +124,36 @@ export const dbService = {
         }
     },
 
-    // Convert file to Base64 (for Firestore storage)
-    fileToBase64: (file) => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
+    // Storage Upload
+    uploadFile: async (file, path) => {
+        try {
+            // Create a reference to 'images/mountains.jpg'
+            const storageRef = ref(storage, path + '/' + Date.now() + '_' + file.name);
+
+            // Upload the file
+            const snapshot = await uploadBytes(storageRef, file);
+
+            // Get the download URL
+            const url = await getDownloadURL(snapshot.ref);
+
+            return {
+                url,
+                storagePath: snapshot.ref.fullPath // Save this to delete later
+            };
+        } catch (error) {
+            console.error("Error uploading file:", error);
+            throw error;
+        }
+    },
+
+    deleteFile: async (path) => {
+        if (!path) return;
+        try {
+            const fileRef = ref(storage, path);
+            await deleteObject(fileRef);
+        } catch (error) {
+            console.error("Error deleting file:", error);
+            // Don't throw here, if file is missing just ignore
+        }
     }
 };

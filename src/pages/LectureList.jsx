@@ -114,8 +114,10 @@ export const LectureList = () => {
             }
 
             try {
-                // Convert to Base64 (stored directly in Firestore)
-                const base64Url = await dbService.fileToBase64(file);
+                // Upload to Firebase Storage
+                // Path structure: lectures/{subjectId}/{lectureId}/{filename}
+                const path = `lectures/${subjectId}/${lectureId}`;
+                const uploadResult = await dbService.uploadFile(file, path);
 
                 let type = 'file';
                 if (file.type.startsWith('image/')) type = 'image';
@@ -125,7 +127,8 @@ export const LectureList = () => {
                     id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
                     type,
                     name: file.name,
-                    url: base64Url, // Base64 data URL
+                    url: uploadResult.url,
+                    storagePath: uploadResult.storagePath, // Store path for deletion
                     mimeType: file.type,
                     addedAt: new Date().toISOString()
                 };
@@ -363,35 +366,26 @@ export const LectureList = () => {
                                                                                 <FileText size={20} />
                                                                             </a>
                                                                             <button
-                                                                                onClick={(e) => {
-                                                                                    e.stopPropagation(); // Prevent card expansion
-                                                                                    // Generic download handler for all browsers
+                                                                                onClick={async (e) => {
+                                                                                    e.stopPropagation();
                                                                                     try {
-                                                                                        // 1. Convert Base64 directly to Blob
-                                                                                        const byteCharacters = atob(item.url.split(',')[1]);
-                                                                                        const byteNumbers = new Array(byteCharacters.length);
-                                                                                        for (let i = 0; i < byteCharacters.length; i++) {
-                                                                                            byteNumbers[i] = byteCharacters.charCodeAt(i);
-                                                                                        }
-                                                                                        const byteArray = new Uint8Array(byteNumbers);
-                                                                                        const blob = new Blob([byteArray], { type: item.mimeType });
-
-                                                                                        // 2. Create Object URL
+                                                                                        // Fetch blob from Storage URL
+                                                                                        const response = await fetch(item.url);
+                                                                                        const blob = await response.blob();
                                                                                         const url = window.URL.createObjectURL(blob);
 
-                                                                                        // 3. Create temp link and click
                                                                                         const link = document.createElement('a');
                                                                                         link.href = url;
                                                                                         link.download = item.name;
                                                                                         document.body.appendChild(link);
                                                                                         link.click();
 
-                                                                                        // 4. Cleanup
                                                                                         document.body.removeChild(link);
                                                                                         window.URL.revokeObjectURL(url);
                                                                                     } catch (err) {
                                                                                         console.error("Download failed", err);
-                                                                                        alert("فشل التحميل. يرجى المحاولة مرة أخرى.");
+                                                                                        // Fallback: Just open in new tab
+                                                                                        window.open(item.url, '_blank');
                                                                                     }
                                                                                 }}
                                                                                 className="p-3 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-xl transition-colors cursor-pointer"
