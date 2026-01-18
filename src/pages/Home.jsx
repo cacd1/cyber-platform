@@ -23,9 +23,9 @@ export const Home = () => {
         }
     };
 
-    const handleSubmitCode = (e) => {
+    const handleSubmitCode = async (e) => {
         e.preventDefault();
-        const result = enterCode(code);
+        const result = await enterCode(code);
         if (result.success) {
             setIsCodeModalOpen(false);
             navigate('/course1');
