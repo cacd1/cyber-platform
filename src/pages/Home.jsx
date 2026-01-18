@@ -149,7 +149,7 @@ export const Home = () => {
                     <Input
                         placeholder="اكتب هنا"
                         value={code}
-                        onChange={(e) => setCode(e.target.value)}
+                        onChange={(e) => setCode(e.target.value.toUpperCase())}
                         className="text-center tracking-widest uppercase text-xl font-cyber"
                         maxLength={9}
                         dir="ltr"
