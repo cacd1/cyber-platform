@@ -7,7 +7,6 @@ import { Landing } from './pages/Landing';
 import { Home } from './pages/Home';
 import { SubjectList } from './pages/SubjectList';
 import { LectureList } from './pages/LectureList';
-import { DataCheck } from './pages/DataCheck';
 import ScrollToTop from './components/layout/ScrollToTop';
 
 function App() {
