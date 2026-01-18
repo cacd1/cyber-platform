@@ -48,7 +48,8 @@ export const SubjectList = () => {
     }, [effectiveRepId]);
 
     // Allow access if student has code OR if representative is logged in
-    if (!hasAccessCode && !user) {
+    const storedCode = localStorage.getItem('accessCode');
+    if (!hasAccessCode && !user && !storedCode) {
         return <Navigate to="/" replace />;
     }
 

@@ -267,8 +267,11 @@ export const LectureList = () => {
         }
     };
 
-    if (!hasAccessCode && !user) return <Navigate to="/" replace />;
-    if (!effectiveRepId) return <Navigate to="/" replace />;
+    const storedActiveRepId = localStorage.getItem('activeRepId');
+    const finalRepId = effectiveRepId || storedActiveRepId;
+
+    if (!hasAccessCode && !user && !localStorage.getItem('accessCode')) return <Navigate to="/" replace />;
+    if (!finalRepId) return <Navigate to="/" replace />;
     if (!subject) return <Navigate to="/course1" replace />;
 
     return (

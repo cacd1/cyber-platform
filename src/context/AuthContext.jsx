@@ -16,7 +16,9 @@ export const AuthProvider = ({ children }) => {
     });
 
     // Derived state: Active Representative ID (from login OR code)
-    const [activeRepId, setActiveRepId] = useState(null);
+    const [activeRepId, setActiveRepId] = useState(() => {
+        return localStorage.getItem('activeRepId') || null;
+    });
 
     // Monitor Auth State
     useEffect(() => {
@@ -40,30 +42,36 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         if (user) {
-            setActiveRepId(user.uid); // Use UID as the common ID
+            setActiveRepId(user.uid);
+            localStorage.setItem('activeRepId', user.uid);
         }
     }, [user]);
 
-    // Handle Active Rep ID when using Access Code
+    // Handle Active Rep ID when using Access Code (Only fetch if not already set or mismatch)
     useEffect(() => {
         const fetchRepByCode = async () => {
             if (accessCode && !user) {
-                // We need to resolve the rep ID from the code
                 try {
                     const q = query(collection(db, 'representatives'), where('accessCode', '==', accessCode));
                     const querySnapshot = await getDocs(q);
                     if (!querySnapshot.empty) {
-                        setActiveRepId(querySnapshot.docs[0].id);
+                        const id = querySnapshot.docs[0].id;
+                        setActiveRepId(id);
+                        localStorage.setItem('activeRepId', id);
                     }
                 } catch (e) {
                     console.error("Error resolving code:", e);
                 }
             } else if (!user && !accessCode) {
                 setActiveRepId(null);
+                localStorage.removeItem('activeRepId');
             }
         };
-        fetchRepByCode();
-    }, [accessCode, user]);
+        // Only run if we don't have an ID yet but have a code
+        if (accessCode && !activeRepId && !user) {
+            fetchRepByCode();
+        }
+    }, [accessCode, user, activeRepId]);
 
 
     // Rate Limit Helper
@@ -114,6 +122,8 @@ export const AuthProvider = ({ children }) => {
     const logout = async () => {
         await signOut(auth);
         setUser(null);
+        localStorage.removeItem('activeRepId');
+        setActiveRepId(null);
     };
 
     const enterCode = async (code) => {
@@ -126,8 +136,14 @@ export const AuthProvider = ({ children }) => {
 
             if (!querySnapshot.empty) {
                 const repData = querySnapshot.docs[0].data();
+                const repId = querySnapshot.docs[0].id; // Get ID directly
+
                 setAccessCode(code);
                 localStorage.setItem('accessCode', code);
+
+                setActiveRepId(repId); // Update State
+                localStorage.setItem('activeRepId', repId); // Persist immediately
+
                 localStorage.removeItem('student_code_attempts');
                 return { success: true, repName: repData.name };
             }
