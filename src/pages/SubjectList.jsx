@@ -25,7 +25,7 @@ export const SubjectList = () => {
     const [lectureCounts, setLectureCounts] = useState({});
 
     // Determine which rep's content to show
-    const effectiveRepId = user ? user.id : activeRepId;
+    const effectiveRepId = user ? user.uid : activeRepId;
 
     useEffect(() => {
         window.scrollTo(0, 0);

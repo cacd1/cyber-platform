@@ -10,14 +10,12 @@ import { useAuth } from '../context/AuthContext';
 import { dbService } from '../services/db';
 import { SUBJECTS } from '../constants';
 
-// Helper to extract YouTube video ID from URL
 const extractYoutubeId = (url) => {
     const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
     const match = url.match(regExp);
     return (match && match[7].length === 11) ? match[7] : null;
 };
 
-// Security: Allowed file types
 const ALLOWED_TYPES = [
     'application/pdf',
     'application/msword',
@@ -37,28 +35,20 @@ export const LectureList = () => {
     const [youtubeInputs, setYoutubeInputs] = useState({});
     const [noteInputs, setNoteInputs] = useState({});
 
-    // Renaming removed to restore stability
-
-
     const subject = SUBJECTS.find(s => s.id === subjectId);
 
-    // Determine who we're viewing content for:
-    // - If Rep is logged in, use their ID (they only edit their own content)
-    // - If Student has access code, use the rep ID from their code
-    const effectiveRepId = user ? user.id : activeRepId;
+    const effectiveRepId = user ? user.uid : activeRepId;
 
-    // Rep can edit when logged in
     const canEdit = !!user;
 
     useEffect(() => {
-        window.scrollTo(0, 0); // Scroll to top on mount
+        window.scrollTo(0, 0);
         const fetchLectures = async () => {
             if (effectiveRepId) {
                 try {
                     const data = await dbService.getLectures(subjectId, effectiveRepId);
                     setLectures(data.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)));
                 } catch (error) {
-                    // Error fetching lectures
                 }
             }
         };
@@ -75,7 +65,7 @@ export const LectureList = () => {
         try {
             const newLec = await dbService.addLecture({
                 subjectId,
-                createdBy: user.id,
+                createdBy: user.uid,
                 name: newLectureName,
                 content: { items: [] }
             });
@@ -107,15 +97,12 @@ export const LectureList = () => {
         if (!lecture) return;
 
         const processFile = async (file) => {
-            // Security: Validate file type
             if (!ALLOWED_TYPES.includes(file.type)) {
                 alert(`نوع الملف غير مدعوم: ${file.name}`);
                 return null;
             }
 
             try {
-                // Upload to Firebase Storage
-                // Path structure: lectures/{subjectId}/{lectureId}/{filename}
                 const path = `lectures/${subjectId}/${lectureId}`;
                 const uploadResult = await dbService.uploadFile(file, path);
 
@@ -128,7 +115,7 @@ export const LectureList = () => {
                     type,
                     name: file.name,
                     url: uploadResult.url,
-                    storagePath: uploadResult.storagePath, // Store path for deletion
+                    storagePath: uploadResult.storagePath,
                     mimeType: file.type,
                     addedAt: new Date().toISOString()
                 };
@@ -237,7 +224,6 @@ export const LectureList = () => {
         const updatedContent = { ...lecture.content, items: updatedItems };
 
         try {
-            // Delete file from storage if applicable
             if (itemToRemove && itemToRemove.storagePath) {
                 await dbService.deleteFile(itemToRemove.storagePath);
             }
@@ -254,10 +240,8 @@ export const LectureList = () => {
         const lecture = lectures.find(l => l.id === lectureId);
         if (!lecture) return;
 
-        // Optimistic update
         const updatedContent = { ...lecture.content, items: newOrder };
 
-        // Update local state immediately for smooth drag
         setLectures(lectures.map(l => l.id === lectureId ? { ...l, content: updatedContent } : l));
 
         try {
@@ -325,7 +309,6 @@ export const LectureList = () => {
                                         className="overflow-hidden bg-black/10"
                                     >
                                         <div className="p-4 border-t border-white/5">
-                                            {/* Unified Content List with Reorder */}
                                             {lecture.content?.items && lecture.content.items.length > 0 ? (
                                                 <Reorder.Group
                                                     axis="y"
@@ -340,7 +323,6 @@ export const LectureList = () => {
                                                             drag={canEdit ? "y" : false}
                                                             className="relative"
                                                         >
-                                                            {/* Render Content Based on Type */}
                                                             {item.type === 'pdf' || item.type === 'file' ? (
                                                                 <div className="flex flex-col gap-2 p-6 bg-gradient-to-r from-cyber/10 to-cyber/5 border border-cyber/20 rounded-2xl group hover:border-cyber/40 transition-all cursor-default">
                                                                     <div className="flex items-center justify-between">
@@ -372,7 +354,6 @@ export const LectureList = () => {
                                                                                 onClick={async (e) => {
                                                                                     e.stopPropagation();
                                                                                     try {
-                                                                                        // Fetch blob from Storage URL
                                                                                         const response = await fetch(item.url);
                                                                                         const blob = await response.blob();
                                                                                         const url = window.URL.createObjectURL(blob);
@@ -387,7 +368,6 @@ export const LectureList = () => {
                                                                                         window.URL.revokeObjectURL(url);
                                                                                     } catch (err) {
                                                                                         console.error("Download failed", err);
-                                                                                        // Fallback: Just open in new tab
                                                                                         window.open(item.url, '_blank');
                                                                                     }
                                                                                 }}
@@ -484,7 +464,6 @@ export const LectureList = () => {
                                                                         )}
                                                                     </div>
 
-                                                                    {/* Neater, smaller video container */}
                                                                     <div className="w-full max-w-[450px] aspect-video rounded-lg overflow-hidden border border-white/10 shadow-lg relative bg-black">
                                                                         <iframe
                                                                             src={`https://www.youtube.com/embed/${item.videoId}`}
@@ -512,12 +491,8 @@ export const LectureList = () => {
                                                 </Reorder.Group>
                                             ) : null}
 
-                                            {/* منطقة إضافة المحتوى للمندوب */}
                                             {canEdit && (
                                                 <div className="space-y-4 mt-4">
-                                                    {/* منطقة سحب وإفلات الملفات */}
-                                                    {/* منطقة سحب وإفلات الملفات - Manual Upload Flow */}
-                                                    {/* منطقة سحب وإفلات الملفات - Direct Upload */}
                                                     <div className="border-2 border-dashed border-cyber/40 rounded-lg p-6 hover:border-cyber hover:bg-cyber/5 transition-all text-center"
                                                         onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add('border-cyber', 'bg-cyber/10'); }}
                                                         onDragLeave={(e) => { e.currentTarget.classList.remove('border-cyber', 'bg-cyber/10'); }}
@@ -548,7 +523,6 @@ export const LectureList = () => {
                                                         />
                                                     </div>
 
-                                                    {/* مربع إضافة رابط يوتيوب */}
                                                     <div className="border border-red-500/30 rounded-lg p-4 bg-red-500/5">
                                                         <div className="flex items-center gap-2 mb-3">
                                                             <Youtube size={20} className="text-red-500" />
@@ -575,7 +549,6 @@ export const LectureList = () => {
                                                         <p className="text-gray-500 text-xs mt-2">مثال: https://www.youtube.com/watch?v=xxxxx</p>
                                                     </div>
 
-                                                    {/* مربع إضافة ملاحظات نصية */}
                                                     <div className="border border-blue-500/30 rounded-lg p-4 bg-blue-500/5">
                                                         <div className="flex items-center gap-2 mb-3">
                                                             <Type size={20} className="text-blue-400" />
@@ -600,7 +573,6 @@ export const LectureList = () => {
                                                         </div>
                                                     </div>
 
-                                                    {/* End of Upload Section */}
                                                 </div>
                                             )}
 

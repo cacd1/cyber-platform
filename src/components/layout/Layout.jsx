@@ -19,9 +19,9 @@ export const Layout = ({ children }) => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        const result = login(email, password);
+        const result = await login(email, password);
         if (result.success) {
             setIsLoginModalOpen(false);
             setEmail('');

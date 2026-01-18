@@ -10,12 +10,10 @@ import {
     where
 } from 'firebase/firestore';
 
-// Cloudinary Configuration
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
 export const dbService = {
-    // Lectures
     getLectures: async (subjectId, repId) => {
         try {
             const q = query(
@@ -78,7 +76,6 @@ export const dbService = {
         }
     },
 
-    // Announcements
     getAnnouncements: async () => {
         try {
             const q = query(
@@ -125,7 +122,6 @@ export const dbService = {
         }
     },
 
-    // Cloudinary Upload
     uploadFile: async (file) => {
         try {
             const formData = new FormData();
@@ -147,7 +143,7 @@ export const dbService = {
 
             return {
                 url: data.secure_url,
-                storagePath: data.public_id // Used for deletion reference
+                storagePath: data.public_id
             };
         } catch (error) {
             console.error("Error uploading to Cloudinary:", error);
@@ -157,8 +153,5 @@ export const dbService = {
 
     deleteFile: async (publicId) => {
         if (!publicId) return;
-        // Client-side unsigned deletion is not supported for security.
-        // Files will remain but link will be removed from DB.
-        console.log("File deletion skipped (Requires signed API for Cloudinary)");
     }
 };
