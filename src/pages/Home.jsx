@@ -51,8 +51,8 @@ export const Home = () => {
 
     return (
         <div className="flex flex-col items-center justify-center min-h-[80vh] relative">
-            {/* University Logo - Top Left */}
-            <div className="fixed top-4 left-4 z-40 flex flex-col items-center">
+            {/* University Logo - Top Right, Hidden on Mobile */}
+            <div className="fixed top-4 right-4 z-40 hidden md:flex flex-col items-center">
                 <img
                     src="/university_logo.png"
                     alt="University of Babylon"
