@@ -1,9 +1,10 @@
 export const SUBJECTS = [
-    { id: 'intro', name: 'أساسيات الحاسوب', nameEn: 'Computer Fundamentals' },
-    { id: 'programming', name: 'برمجة مهيكلة', nameEn: 'Structured Programming' },
-    { id: 'math', name: 'رياضيات', nameEn: 'Mathematics' },
-    { id: 'cs', name: 'أساسيات أمن سيبراني', nameEn: 'User Security Fundamentals' },
-    { id: 'ethics', name: 'أخلاقيات المهنة', nameEn: 'Professional Ethics' },
+    { id: 'notifications', name: 'التبليغات', nameEn: 'Notifications', isNotifications: true },
+    { id: 'programming', name: 'البرمجة', nameEn: 'Programming' },
+    { id: 'intro', name: 'علوم الحاسوب', nameEn: 'Computer Science' },
+    { id: 'cs', name: 'مقدمة في الأمن السيبراني', nameEn: 'Introduction to Cybersecurity' },
+    { id: 'ethics', name: 'أخلاقيات وقوانين الأمن السيبراني', nameEn: 'Cybersecurity Ethics & Laws' },
     { id: 'rights', name: 'حقوق الإنسان', nameEn: 'Human Rights' },
-    { id: 'arabic', name: 'لغة عربية', nameEn: 'Arabic Language' }
+    { id: 'math', name: 'الرياضيات', nameEn: 'Mathematics' },
+    { id: 'arabic', name: 'اللغة العربية', nameEn: 'Arabic Language' }
 ];

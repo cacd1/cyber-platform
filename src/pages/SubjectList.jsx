@@ -8,6 +8,7 @@ import { dbService } from '../services/db';
 import { SUBJECTS } from '../constants';
 
 const ICONS = {
+    notifications: Bell,
     programming: Code,
     cs: Globe,
     ethics: Scale,
