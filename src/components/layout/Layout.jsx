@@ -7,6 +7,7 @@ import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
 import { useAuth } from '../../context/AuthContext';
 import { ChatNote } from '../features/ChatNote';
+import { TranslatorHMF } from '../features/TranslatorHMF';
 
 export const Layout = ({ children }) => {
     const { theme } = useTheme();
@@ -69,6 +70,7 @@ export const Layout = ({ children }) => {
             </main>
 
             {/* Chat Note Feature */}
+            <TranslatorHMF />
             <ChatNote />
 
             {/* Login Modal */}
@@ -100,7 +102,7 @@ export const Layout = ({ children }) => {
             {/* Footer */}
             <div className="fixed bottom-2 left-0 right-0 text-center z-50 pointer-events-none">
                 <p className="text-[10px] md:text-xs text-white/90 font-cyber font-bold drop-shadow-md">
-                    نظام الذكاء الاصطناعي قيد التطوير
+                    نظام الذكاء الاصطناعي و المترجم قيد التطوير
                 </p>
             </div>
         </div>
