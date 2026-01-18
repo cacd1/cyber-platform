@@ -7,10 +7,12 @@ import { Landing } from './pages/Landing';
 import { Home } from './pages/Home';
 import { SubjectList } from './pages/SubjectList';
 import { LectureList } from './pages/LectureList';
+import ScrollToTop from './components/layout/ScrollToTop';
 
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <ThemeProvider>
         <AuthProvider>
           <Layout>
