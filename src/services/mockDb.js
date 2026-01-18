@@ -1,14 +1,4 @@
-
-// Pre-configured representatives from SOP
-const INITIAL_REPS = [
-    { id: 'rep1', email: "ZaidDeaa@university.edu", password: "20052026OPHLNM12", accessCode: "CLAS20261", name: "Zaid Deaa" },
-    { id: 'rep2', email: "MohammedHassanein@university.edu", password: "20042025POCKMN32", accessCode: "CLAS20262", name: "Mohammed Hassanein" },
-    { id: 'rep3', email: "IhsanMajid@university.edu", password: "20032024KLEPNM52", accessCode: "CLAS20263", name: "Ihsan Majid" },
-    { id: 'rep4', email: "AliKhalid@university.edu", password: "20022023SAXZJQ06", accessCode: "CLAS20264", name: "Ali Khalid" },
-    { id: 'rep5', email: "MohammedJaafar@university.edu", password: "20012022RTGZCV74", accessCode: "CLAS20265", name: "Mohammed Jaafar" },
-    { id: 'rep6', email: "HassanMohammed@university.edu", password: "20002021YUIAZT01", accessCode: "CLAS20266", name: "Hassan Mohammed" }
-];
-
+// Keep subjects for reference or move to DB later
 const INITIAL_SUBJECTS = [
     { id: 'notifications', name: 'التبليغات', nameEn: 'Notifications' },
     { id: 'programming', name: 'البرمجة', nameEn: 'Programming Structured' },
@@ -31,17 +21,6 @@ const setStorage = (key, val) => {
 };
 
 export const mockDb = {
-    // Representatives
-    getRepByEmail: (email) => {
-        return INITIAL_REPS.find(r => r.email.toLowerCase() === email.toLowerCase());
-    },
-
-    getRepByCode: (code) => {
-        return INITIAL_REPS.find(r => r.accessCode.toLowerCase() === code.toLowerCase());
-    },
-
-    getAllReps: () => INITIAL_REPS,
-
     // Subjects
     getSubjects: () => INITIAL_SUBJECTS,
 
