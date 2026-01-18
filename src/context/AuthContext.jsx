@@ -132,7 +132,8 @@ export const AuthProvider = ({ children }) => {
                 return { success: true, repName: repData.name };
             }
         } catch (e) {
-            console.error(e);
+            console.error("Enter Code Error:", e);
+            return { success: false, error: "System Error: " + e.message };
         }
 
         recordAttempt('student_code_attempts', rateLimit.data, 4, 10);
