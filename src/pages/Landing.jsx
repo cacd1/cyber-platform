@@ -73,8 +73,12 @@ export const Landing = () => {
                 transition={{ duration: 0.8 }}
                 className="text-center mb-16 relative z-10"
             >
-                <div className="inline-block p-4 rounded-full bg-cyber/10 mb-6 border border-cyber/20 shadow-[0_0_30px_rgba(0,240,255,0.1)]">
-                    <GraduationCap size={48} className="text-cyber" />
+                <div className="inline-block p-3 rounded-full bg-cyber/10 mb-6 border border-cyber/20 shadow-[0_0_30px_rgba(0,240,255,0.1)]">
+                    <img
+                        src="/university_logo.png"
+                        alt="University of Babylon"
+                        className="w-16 h-16 object-contain"
+                    />
                 </div>
                 <h1 className="text-4xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-gray-400 drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] mb-4">
                     قسم أمن المعلومات
@@ -96,8 +100,8 @@ export const Landing = () => {
                     <motion.div key={stage.id} variants={item} className="h-full">
                         <Card
                             className={`h-full relative overflow-hidden group border-white/5 bg-white/5 hover:bg-white/10 transition-all duration-500 ${stage.status === 'open'
-                                    ? 'cursor-pointer hover:border-cyber/50 hover:shadow-[0_0_30px_rgba(0,240,255,0.15)] ring-1 ring-cyan-500/20'
-                                    : 'cursor-not-allowed opacity-70 grayscale hover:grayscale-0'
+                                ? 'cursor-pointer hover:border-cyber/50 hover:shadow-[0_0_30px_rgba(0,240,255,0.15)] ring-1 ring-cyan-500/20'
+                                : 'cursor-not-allowed opacity-70 grayscale hover:grayscale-0'
                                 }`}
                             onClick={() => stage.status === 'open' && navigate(stage.path)}
                         >

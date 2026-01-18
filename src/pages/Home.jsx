@@ -51,22 +51,20 @@ export const Home = () => {
 
     return (
         <div className="flex flex-col items-center justify-center min-h-[80vh] relative">
-            {/* University Logo - Top Right, Hidden on Mobile */}
-            <div className="fixed top-4 right-4 z-40 hidden md:flex flex-col items-center">
-                <img
-                    src="/university_logo.png"
-                    alt="University of Babylon"
-                    className="w-14 h-14 object-contain drop-shadow-[0_0_10px_rgba(0,240,255,0.2)]"
-                />
-                <p className="text-[10px] text-gray-400 mt-1 text-center leading-tight">University of<br />Babylon</p>
-            </div>
-
             <motion.div
                 initial={{ y: -20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 className="text-center mb-16"
             >
-                <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-700 dark:from-cyber dark:via-white dark:to-cyber-dim mb-4 drop-shadow-sm dark:drop-shadow-[0_0_15px_rgba(0,240,255,0.3)] mt-12 md:mt-0">
+                {/* University Logo - Centered */}
+                <div className="inline-block p-3 rounded-full bg-cyber/10 mb-6 border border-cyber/20 shadow-[0_0_30px_rgba(0,240,255,0.1)]">
+                    <img
+                        src="/university_logo.png"
+                        alt="University of Babylon"
+                        className="w-16 h-16 object-contain"
+                    />
+                </div>
+                <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-700 dark:from-cyber dark:via-white dark:to-cyber-dim mb-4 drop-shadow-sm dark:drop-shadow-[0_0_15px_rgba(0,240,255,0.3)]">
                     طلاب الامن السيبراني مرحله اولى
                 </h1>
                 <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto font-medium dark:font-normal">
