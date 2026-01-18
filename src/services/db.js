@@ -9,8 +9,10 @@ import {
     query,
     where
 } from 'firebase/firestore';
-import { storage } from '../lib/firebase';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+
+// Cloudinary Configuration
+const CLOUD_NAME = "dsoqunjxn";
+const UPLOAD_PRESET = "cyber project";
 
 export const dbService = {
     // Lectures
@@ -80,8 +82,7 @@ export const dbService = {
     getAnnouncements: async () => {
         try {
             const q = query(
-                collection(db, 'announcements'),
-                // Order by date desc? We can sort client side if needed or add orderBy
+                collection(db, 'announcements')
             );
             const querySnapshot = await getDocs(q);
             return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -124,36 +125,40 @@ export const dbService = {
         }
     },
 
-    // Storage Upload
-    uploadFile: async (file, path) => {
+    // Cloudinary Upload
+    uploadFile: async (file) => {
         try {
-            // Create a reference to 'images/mountains.jpg'
-            const storageRef = ref(storage, path + '/' + Date.now() + '_' + file.name);
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', UPLOAD_PRESET);
 
-            // Upload the file
-            const snapshot = await uploadBytes(storageRef, file);
+            const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`, {
+                method: 'POST',
+                body: formData
+            });
 
-            // Get the download URL
-            const url = await getDownloadURL(snapshot.ref);
+            if (!response.ok) {
+                const errData = await response.text();
+                console.error("Cloudinary error:", errData);
+                throw new Error('Upload failed: ' + response.statusText);
+            }
+
+            const data = await response.json();
 
             return {
-                url,
-                storagePath: snapshot.ref.fullPath // Save this to delete later
+                url: data.secure_url,
+                storagePath: data.public_id // Used for deletion reference
             };
         } catch (error) {
-            console.error("Error uploading file:", error);
+            console.error("Error uploading to Cloudinary:", error);
             throw error;
         }
     },
 
-    deleteFile: async (path) => {
-        if (!path) return;
-        try {
-            const fileRef = ref(storage, path);
-            await deleteObject(fileRef);
-        } catch (error) {
-            console.error("Error deleting file:", error);
-            // Don't throw here, if file is missing just ignore
-        }
+    deleteFile: async (publicId) => {
+        if (!publicId) return;
+        // Client-side unsigned deletion is not supported for security.
+        // Files will remain but link will be removed from DB.
+        console.log("File deletion skipped (Requires signed API for Cloudinary)");
     }
 };
