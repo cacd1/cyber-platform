@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Shield, Lock, ChevronRight, GraduationCap, Server, Database, Globe } from 'lucide-react';
 import { Card } from '../components/ui/Card';
@@ -98,50 +98,80 @@ export const Landing = () => {
             >
                 {stages.map((stage) => (
                     <motion.div key={stage.id} variants={item} className="h-full">
-                        <Card
-                            className={`h-full relative overflow-hidden group border-white/5 bg-white/5 hover:bg-white/10 transition-all duration-500 ${stage.status === 'open'
-                                ? 'cursor-pointer hover:border-cyber/50 hover:shadow-[0_0_30px_rgba(0,240,255,0.15)] ring-1 ring-cyan-500/20'
-                                : 'cursor-not-allowed opacity-70 grayscale hover:grayscale-0'
-                                }`}
-                            onClick={() => stage.status === 'open' && navigate(stage.path)}
-                        >
-                            {/* Background Gradient Effect */}
-                            <div className={`absolute inset-0 bg-gradient-to-br ${stage.color} opacity-0 group-hover:opacity-5 transition-opacity duration-500`} />
+                        {stage.status === 'open' ? (
+                            <Link to={stage.path} className="block h-full">
+                                <Card
+                                    className="h-full relative overflow-hidden group border-white/5 bg-white/5 hover:bg-white/10 transition-all duration-500 cursor-pointer hover:border-cyber/50 hover:shadow-[0_0_30px_rgba(0,240,255,0.15)] ring-1 ring-cyan-500/20"
+                                >
+                                    {/* Background Gradient Effect */}
+                                    <div className={`absolute inset-0 bg-gradient-to-br ${stage.color} opacity-0 group-hover:opacity-5 transition-opacity duration-500`} />
 
-                            <div className="p-6 flex flex-col items-center text-center h-full">
-                                {/* Icon */}
-                                <div className={`mb-6 p-4 rounded-2xl bg-gradient-to-br ${stage.color} bg-opacity-10 text-white shadow-lg group-hover:scale-110 transition-transform duration-500 relative overflow-hidden`}>
-                                    <div className="absolute inset-0 bg-black/20" />
-                                    <div className="relative z-10">
-                                        {stage.status === 'locked' ? <Lock size={32} /> : stage.icon}
+                                    <div className="p-6 flex flex-col items-center text-center h-full">
+                                        {/* Icon */}
+                                        <div className={`mb-6 p-4 rounded-2xl bg-gradient-to-br ${stage.color} bg-opacity-10 text-white shadow-lg group-hover:scale-110 transition-transform duration-500 relative overflow-hidden`}>
+                                            <div className="absolute inset-0 bg-black/20" />
+                                            <div className="relative z-10">
+                                                {stage.status === 'locked' ? <Lock size={32} /> : stage.icon}
+                                            </div>
+                                        </div>
+
+                                        {/* Title */}
+                                        <h3 className="text-2xl font-bold text-white mb-2">{stage.title}</h3>
+                                        <p className="text-xs font-cyber text-gray-400 tracking-widest uppercase mb-4">{stage.subtitle}</p>
+
+                                        {/* Divider */}
+                                        <div className="w-12 h-0.5 bg-white/10 mb-4 group-hover:w-24 group-hover:bg-cyber/50 transition-all duration-500" />
+
+                                        {/* Description */}
+                                        <p className="text-sm text-gray-400 mb-8 flex-grow">{stage.description}</p>
+
+                                        {/* Action / Status */}
+                                        <div className="w-full">
+                                            <div className="flex items-center justify-center gap-2 text-cyber font-bold group-hover:gap-4 transition-all duration-300">
+                                                <span>الدخول</span>
+                                                <ChevronRight size={16} />
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
+                                </Card>
+                            </Link>
+                        ) : (
+                            <div className="h-full">
+                                <Card
+                                    className="h-full relative overflow-hidden group border-white/5 bg-white/5 hover:bg-white/10 transition-all duration-500 cursor-not-allowed opacity-70 grayscale hover:grayscale-0"
+                                >
+                                    {/* Background Gradient Effect */}
+                                    <div className={`absolute inset-0 bg-gradient-to-br ${stage.color} opacity-0 group-hover:opacity-5 transition-opacity duration-500`} />
 
-                                {/* Title */}
-                                <h3 className="text-2xl font-bold text-white mb-2">{stage.title}</h3>
-                                <p className="text-xs font-cyber text-gray-400 tracking-widest uppercase mb-4">{stage.subtitle}</p>
-
-                                {/* Divider */}
-                                <div className="w-12 h-0.5 bg-white/10 mb-4 group-hover:w-24 group-hover:bg-cyber/50 transition-all duration-500" />
-
-                                {/* Description */}
-                                <p className="text-sm text-gray-400 mb-8 flex-grow">{stage.description}</p>
-
-                                {/* Action / Status */}
-                                <div className="w-full">
-                                    {stage.status === 'open' ? (
-                                        <div className="flex items-center justify-center gap-2 text-cyber font-bold group-hover:gap-4 transition-all duration-300">
-                                            <span>الدخول</span>
-                                            <ChevronRight size={16} />
+                                    <div className="p-6 flex flex-col items-center text-center h-full">
+                                        {/* Icon */}
+                                        <div className={`mb-6 p-4 rounded-2xl bg-gradient-to-br ${stage.color} bg-opacity-10 text-white shadow-lg group-hover:scale-110 transition-transform duration-500 relative overflow-hidden`}>
+                                            <div className="absolute inset-0 bg-black/20" />
+                                            <div className="relative z-10">
+                                                {stage.status === 'locked' ? <Lock size={32} /> : stage.icon}
+                                            </div>
                                         </div>
-                                    ) : (
-                                        <div className="text-xs font-cyber text-red-400/80 bg-red-500/10 py-1.5 px-3 rounded-full border border-red-500/20 inline-block">
-                                            قيد التطوير - DEV
+
+                                        {/* Title */}
+                                        <h3 className="text-2xl font-bold text-white mb-2">{stage.title}</h3>
+                                        <p className="text-xs font-cyber text-gray-400 tracking-widest uppercase mb-4">{stage.subtitle}</p>
+
+                                        {/* Divider */}
+                                        <div className="w-12 h-0.5 bg-white/10 mb-4 group-hover:w-24 group-hover:bg-cyber/50 transition-all duration-500" />
+
+                                        {/* Description */}
+                                        <p className="text-sm text-gray-400 mb-8 flex-grow">{stage.description}</p>
+
+                                        {/* Action / Status */}
+                                        <div className="w-full">
+                                            <div className="text-xs font-cyber text-red-400/80 bg-red-500/10 py-1.5 px-3 rounded-full border border-red-500/20 inline-block">
+                                                قيد التطوير - DEV
+                                            </div>
                                         </div>
-                                    )}
-                                </div>
+                                    </div>
+                                </Card>
                             </div>
-                        </Card>
+                        )}
                     </motion.div>
                 ))}
             </motion.div>
