@@ -83,10 +83,7 @@ export const Admin = () => {
         }
     };
 
-    // Existing functions...
-    const fetchRepresentatives = async () => {
-        // Redundant but kept for structure if needed, replaced by fetchData
-    };
+
 
     const handleAddRepresentative = async (e) => {
         e.preventDefault();
@@ -119,7 +116,7 @@ export const Admin = () => {
 
             setSuccess('تم إضافة الممثل بنجاح!');
             setNewRep({ name: '', email: '', password: '', code: '', stage: activeStageTab });
-            fetchRepresentatives();
+            fetchData();
             setTimeout(() => setIsAddModalOpen(false), 1500);
         } catch (err) {
             console.error('Error adding representative:', err);
@@ -142,7 +139,7 @@ export const Admin = () => {
             setSuccess('تم حذف الممثل بنجاح');
             setIsDeleteModalOpen(false);
             setSelectedRep(null);
-            fetchRepresentatives();
+            fetchData();
         } catch (err) {
             console.error('Error deleting representative:', err);
             setError('فشل في حذف الممثل');
@@ -470,8 +467,8 @@ export const Admin = () => {
                                     type="button"
                                     onClick={() => setNewRep({ ...newRep, stage })}
                                     className={`p-2 rounded border text-sm font-bold transition-all ${newRep.stage === stage
-                                            ? 'bg-violet-500/20 border-violet-500 text-violet-400'
-                                            : 'bg-white/5 border-transparent text-gray-500 hover:bg-white/10'
+                                        ? 'bg-violet-500/20 border-violet-500 text-violet-400'
+                                        : 'bg-white/5 border-transparent text-gray-500 hover:bg-white/10'
                                         }`}
                                 >
                                     {stage}
