@@ -1,46 +1,59 @@
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Helper function to check if user is authenticated
+    // Helper: Check if user is authenticated
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    // Helper function to check if user is owner of the document
+    // Helper: Check if user is the Admin (nb2@admin.com)
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.email == 'nb2@admin.com';
+    }
+
+    // Helper: Check if user is owner of the document (resource)
     function isOwner(resource) {
       return isAuthenticated() && resource.data.createdBy == request.auth.uid;
     }
 
-    // Helper function to check if user is setting themselves as owner on create
+    // Helper: Check if user is setting themselves as owner on create
     function isOwnerOnCreate() {
       return isAuthenticated() && request.resource.data.createdBy == request.auth.uid;
     }
 
+    // 1. Lectures: Anyone reads, Only Reps create/edit their own
     match /lectures/{lectureId} {
       allow read: if true;
       allow create: if isOwnerOnCreate();
-      allow update, delete: if isOwner(resource);
+      allow update, delete: if isOwner(resource) || isAdmin(); // Admin can also moderate
     }
 
+    // 2. Announcements: Anyone reads, Only Reps create/edit their own
     match /announcements/{announcementId} {
       allow read: if true;
       allow create: if isOwnerOnCreate();
-      allow update, delete: if isOwner(resource);
+      allow update, delete: if isOwner(resource) || isAdmin();
     }
     
+    // 3. Representatives: CRITICAL - Only Admin can manage this
     match /representatives/{repId} {
       allow read: if true;
-      allow write: if isAuthenticated();
+      // ONLY Admin (nb2@admin.com) can add/delete representatives
+      // The Rep themselves can only update 'lastSeen' (for presence)
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || (request.auth.uid == repId && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastSeen']));
     }
 
+    // 4. Settings: CRITICAL - Only Admin can change global settings
     match /settings/{settingId} {
       allow read: if true;
-      allow write: if isAuthenticated();
+      allow write: if isAdmin();
     }
 
+    // Default: Deny all
     match /{document=**} {
       allow read: if true;
-      allow write: if false; // Deny all other writes by default
+      allow write: if false; 
     }
   }
 }
