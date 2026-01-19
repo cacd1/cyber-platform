@@ -1,0 +1,298 @@
+import { useState, useEffect } from 'react';
+import { Navigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Shield, UserPlus, Trash2, Users, Key, Mail, User, AlertTriangle } from 'lucide-react';
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
+import { Modal } from '../components/ui/Modal';
+import { useAuth } from '../context/AuthContext';
+import { ADMIN_EMAIL } from '../constants';
+import { db } from '../lib/firebase';
+import { collection, getDocs, addDoc, deleteDoc, doc, query, where } from 'firebase/firestore';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../lib/firebase';
+
+export const Admin = () => {
+    const { user } = useAuth();
+    const [representatives, setRepresentatives] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [selectedRep, setSelectedRep] = useState(null);
+    const [newRep, setNewRep] = useState({ name: '', email: '', password: '', code: '' });
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
+
+    // Check if user is admin
+    const isAdmin = user?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+
+    // Fetch representatives
+    useEffect(() => {
+        if (isAdmin) {
+            fetchRepresentatives();
+        }
+    }, [isAdmin]);
+
+    const fetchRepresentatives = async () => {
+        try {
+            setLoading(true);
+            const querySnapshot = await getDocs(collection(db, 'representatives'));
+            const reps = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setRepresentatives(reps);
+        } catch (err) {
+            console.error('Error fetching representatives:', err);
+            setError('فشل في تحميل قائمة الممثلين');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleAddRepresentative = async (e) => {
+        e.preventDefault();
+        setError('');
+        setSuccess('');
+
+        if (!newRep.name || !newRep.email || !newRep.password || !newRep.code) {
+            setError('جميع الحقول مطلوبة');
+            return;
+        }
+
+        if (newRep.code.length !== 9) {
+            setError('كود الشعبة يجب أن يكون 9 خانات');
+            return;
+        }
+
+        try {
+            // Create Firebase Auth user
+            const userCredential = await createUserWithEmailAndPassword(auth, newRep.email, newRep.password);
+
+            // Add to Firestore
+            await addDoc(collection(db, 'representatives'), {
+                uid: userCredential.user.uid,
+                name: newRep.name,
+                email: newRep.email,
+                accessCode: newRep.code.toUpperCase(),
+                createdAt: new Date().toISOString()
+            });
+
+            setSuccess('تم إضافة الممثل بنجاح!');
+            setNewRep({ name: '', email: '', password: '', code: '' });
+            fetchRepresentatives();
+            setTimeout(() => setIsAddModalOpen(false), 1500);
+        } catch (err) {
+            console.error('Error adding representative:', err);
+            if (err.code === 'auth/email-already-in-use') {
+                setError('هذا الإيميل مستخدم مسبقاً');
+            } else if (err.code === 'auth/weak-password') {
+                setError('كلمة السر ضعيفة (6 أحرف على الأقل)');
+            } else {
+                setError('فشل في إضافة الممثل: ' + err.message);
+            }
+        }
+    };
+
+    const handleDeleteRepresentative = async () => {
+        if (!selectedRep) return;
+        setError('');
+
+        try {
+            await deleteDoc(doc(db, 'representatives', selectedRep.id));
+            setSuccess('تم حذف الممثل بنجاح');
+            setIsDeleteModalOpen(false);
+            setSelectedRep(null);
+            fetchRepresentatives();
+        } catch (err) {
+            console.error('Error deleting representative:', err);
+            setError('فشل في حذف الممثل');
+        }
+    };
+
+    // Redirect if not admin
+    if (!user) {
+        return <Navigate to="/" replace />;
+    }
+
+    if (!isAdmin) {
+        return (
+            <div className="min-h-[80vh] flex items-center justify-center">
+                <Card className="max-w-md text-center p-8">
+                    <AlertTriangle className="mx-auto text-red-500 mb-4" size={48} />
+                    <h2 className="text-xl font-bold text-white mb-2">غير مصرح بالدخول</h2>
+                    <p className="text-gray-400">هذه الصفحة مخصصة للمسؤولين فقط</p>
+                </Card>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-[80vh] p-4 md:p-8">
+            {/* Header */}
+            <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-8"
+            >
+                <div className="flex items-center gap-3 mb-2">
+                    <Shield className="text-cyber" size={32} />
+                    <h1 className="text-3xl font-bold text-white">لوحة التحكم</h1>
+                </div>
+                <p className="text-gray-400">إدارة حسابات الممثلين</p>
+            </motion.div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <Card className="p-4 bg-violet-500/10 border-violet-500/20">
+                    <div className="flex items-center gap-3">
+                        <Users className="text-violet-400" size={24} />
+                        <div>
+                            <p className="text-2xl font-bold text-white">{representatives.length}</p>
+                            <p className="text-sm text-gray-400">ممثل مسجل</p>
+                        </div>
+                    </div>
+                </Card>
+            </div>
+
+            {/* Add Button */}
+            <div className="mb-6">
+                <Button onClick={() => setIsAddModalOpen(true)} className="flex items-center gap-2">
+                    <UserPlus size={20} />
+                    إضافة ممثل جديد
+                </Button>
+            </div>
+
+            {/* Representatives List */}
+            <Card className="p-0 overflow-hidden">
+                <div className="p-4 border-b border-white/10">
+                    <h2 className="text-lg font-bold text-white">قائمة الممثلين</h2>
+                </div>
+
+                {loading ? (
+                    <div className="p-8 text-center text-gray-400">جاري التحميل...</div>
+                ) : representatives.length === 0 ? (
+                    <div className="p-8 text-center text-gray-400">لا يوجد ممثلين مسجلين</div>
+                ) : (
+                    <div className="divide-y divide-white/10">
+                        {representatives.map((rep) => (
+                            <div key={rep.id} className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 rounded-full bg-violet-500/20 flex items-center justify-center">
+                                        <User className="text-violet-400" size={20} />
+                                    </div>
+                                    <div>
+                                        <p className="font-bold text-white">{rep.name}</p>
+                                        <p className="text-sm text-gray-400">{rep.email}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <span className="text-xs font-mono bg-cyber/20 text-cyber px-2 py-1 rounded">
+                                        {rep.accessCode}
+                                    </span>
+                                    <Button
+                                        variant="danger"
+                                        className="p-2"
+                                        onClick={() => {
+                                            setSelectedRep(rep);
+                                            setIsDeleteModalOpen(true);
+                                        }}
+                                    >
+                                        <Trash2 size={16} />
+                                    </Button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </Card>
+
+            {/* Add Representative Modal */}
+            <Modal
+                isOpen={isAddModalOpen}
+                onClose={() => { setIsAddModalOpen(false); setError(''); setSuccess(''); }}
+                title="إضافة ممثل جديد"
+            >
+                <form onSubmit={handleAddRepresentative} className="flex flex-col gap-4">
+                    <div>
+                        <label className="text-sm text-gray-400 mb-1 block">الاسم</label>
+                        <Input
+                            placeholder="اسم الممثل"
+                            value={newRep.name}
+                            onChange={(e) => setNewRep({ ...newRep, name: e.target.value })}
+                            icon={<User size={16} />}
+                        />
+                    </div>
+                    <div>
+                        <label className="text-sm text-gray-400 mb-1 block">الإيميل</label>
+                        <Input
+                            type="email"
+                            placeholder="email@example.com"
+                            value={newRep.email}
+                            onChange={(e) => setNewRep({ ...newRep, email: e.target.value })}
+                            icon={<Mail size={16} />}
+                            dir="ltr"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-sm text-gray-400 mb-1 block">كلمة السر</label>
+                        <Input
+                            type="password"
+                            placeholder="••••••••"
+                            value={newRep.password}
+                            onChange={(e) => setNewRep({ ...newRep, password: e.target.value })}
+                            icon={<Key size={16} />}
+                            dir="ltr"
+                        />
+                    </div>
+                    <div>
+                        <label className="text-sm text-gray-400 mb-1 block">كود الشعبة (9 خانات)</label>
+                        <Input
+                            placeholder="ABC123XYZ"
+                            value={newRep.code}
+                            onChange={(e) => setNewRep({ ...newRep, code: e.target.value.toUpperCase() })}
+                            maxLength={9}
+                            icon={<Shield size={16} />}
+                            dir="ltr"
+                            className="font-mono uppercase"
+                        />
+                    </div>
+
+                    {error && <p className="text-red-500 text-sm">{error}</p>}
+                    {success && <p className="text-green-500 text-sm">{success}</p>}
+
+                    <Button type="submit" className="w-full mt-2">
+                        إضافة الممثل
+                    </Button>
+                </form>
+            </Modal>
+
+            {/* Delete Confirmation Modal */}
+            <Modal
+                isOpen={isDeleteModalOpen}
+                onClose={() => { setIsDeleteModalOpen(false); setSelectedRep(null); }}
+                title="تأكيد الحذف"
+            >
+                <div className="text-center">
+                    <AlertTriangle className="mx-auto text-red-500 mb-4" size={48} />
+                    <p className="text-white mb-2">هل أنت متأكد من حذف الممثل؟</p>
+                    <p className="text-gray-400 mb-6">{selectedRep?.name}</p>
+                    <div className="flex gap-4">
+                        <Button
+                            variant="ghost"
+                            className="flex-1"
+                            onClick={() => setIsDeleteModalOpen(false)}
+                        >
+                            إلغاء
+                        </Button>
+                        <Button
+                            variant="danger"
+                            className="flex-1"
+                            onClick={handleDeleteRepresentative}
+                        >
+                            حذف
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+        </div>
+    );
+};

@@ -8,3 +8,7 @@ export const SUBJECTS = [
     { id: 'math', name: 'الرياضيات', nameEn: 'Mathematics' },
     { id: 'arabic', name: 'اللغة العربية', nameEn: 'Arabic Language' }
 ];
+
+// Admin email for dashboard access
+export const ADMIN_EMAIL = 'admin@uobabylon.edu.iq';
+

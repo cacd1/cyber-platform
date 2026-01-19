@@ -7,6 +7,7 @@ import { Landing } from './pages/Landing';
 import { Home } from './pages/Home';
 import { SubjectList } from './pages/SubjectList';
 import { LectureList } from './pages/LectureList';
+import { Admin } from './pages/Admin';
 import ScrollToTop from './components/layout/ScrollToTop';
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
               <Route path="/home" element={<Home />} />
               <Route path="/course1" element={<SubjectList />} />
               <Route path="/course1/:subjectId" element={<LectureList />} />
+              <Route path="/ctrl-panel" element={<Admin />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Layout>
