@@ -8,7 +8,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 const API_KEY = "AIzaSyBAQsPrws_XIm_pfYZJy-KYUSPmYC9Tbr8";
 const genAI = new GoogleGenerativeAI(API_KEY);
 
-const MODELS_TO_TRY = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"];
+const MODELS_TO_TRY = ["gemini-2.0-flash", "gemini-1.0-pro", "gemini-pro-vision"];
 
 export const TranslatorHMF = () => {
     const [isOpen, setIsOpen] = useState(false);
