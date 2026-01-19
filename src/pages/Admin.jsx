@@ -22,7 +22,8 @@ export const Admin = () => {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedRep, setSelectedRep] = useState(null);
-    const [newRep, setNewRep] = useState({ name: '', email: '', password: '', code: '' });
+    const [newRep, setNewRep] = useState({ name: '', email: '', password: '', code: '', stage: '1' });
+    const [activeStageTab, setActiveStageTab] = useState('1'); // '1', '2', '3', '4'
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
@@ -112,11 +113,12 @@ export const Admin = () => {
                 name: newRep.name,
                 email: newRep.email,
                 accessCode: newRep.code.toUpperCase(),
+                stage: newRep.stage,
                 createdAt: new Date().toISOString()
             });
 
             setSuccess('تم إضافة الممثل بنجاح!');
-            setNewRep({ name: '', email: '', password: '', code: '' });
+            setNewRep({ name: '', email: '', password: '', code: '', stage: activeStageTab });
             fetchRepresentatives();
             setTimeout(() => setIsAddModalOpen(false), 1500);
         } catch (err) {
@@ -341,17 +343,31 @@ export const Admin = () => {
 
             {/* Representatives List */}
             <Card className="p-0 overflow-hidden">
-                <div className="p-4 border-b border-white/10">
+                <div className="p-4 border-b border-white/10 flex flex-col gap-4">
                     <h2 className="text-lg font-bold text-white">قائمة الممثلين</h2>
+                    <div className="flex gap-2">
+                        {['1', '2', '3', '4'].map((stage) => (
+                            <button
+                                key={stage}
+                                onClick={() => setActiveStageTab(stage)}
+                                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${activeStageTab === stage
+                                    ? 'bg-violet-600 text-white shadow-lg shadow-violet-500/20'
+                                    : 'bg-white/5 text-gray-400 hover:bg-white/10'
+                                    }`}
+                            >
+                                المرحلة {stage}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 {loading ? (
                     <div className="p-8 text-center text-gray-400">جاري التحميل...</div>
-                ) : representatives.length === 0 ? (
-                    <div className="p-8 text-center text-gray-400">لا يوجد ممثلين مسجلين</div>
+                ) : representatives.filter(r => (r.stage || '1') === activeStageTab).length === 0 ? (
+                    <div className="p-8 text-center text-gray-400">لا يوجد ممثلين لهذه المرحلة</div>
                 ) : (
                     <div className="divide-y divide-white/10">
-                        {representatives.map((rep) => (
+                        {representatives.filter(r => (r.stage || '1') === activeStageTab).map((rep) => (
                             <div key={rep.id} className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors">
                                 <div className="flex items-center gap-4">
                                     <div className="w-10 h-10 rounded-full bg-violet-500/20 flex items-center justify-center">
@@ -443,6 +459,25 @@ export const Admin = () => {
                             dir="ltr"
                             className="font-mono uppercase"
                         />
+                    </div>
+
+                    <div>
+                        <label className="text-sm text-gray-400 mb-1 block">المرحلة</label>
+                        <div className="grid grid-cols-4 gap-2">
+                            {['1', '2', '3', '4'].map((stage) => (
+                                <button
+                                    key={stage}
+                                    type="button"
+                                    onClick={() => setNewRep({ ...newRep, stage })}
+                                    className={`p-2 rounded border text-sm font-bold transition-all ${newRep.stage === stage
+                                            ? 'bg-violet-500/20 border-violet-500 text-violet-400'
+                                            : 'bg-white/5 border-transparent text-gray-500 hover:bg-white/10'
+                                        }`}
+                                >
+                                    {stage}
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
                     {error && <p className="text-red-500 text-sm">{error}</p>}
