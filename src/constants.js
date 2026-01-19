@@ -10,5 +10,5 @@ export const SUBJECTS = [
 ];
 
 // Admin email for dashboard access
-export const ADMIN_EMAIL = 'admin@uobabylon.edu.iq';
+export const ADMIN_EMAIL = 'nb2@admin.com';
 
