@@ -5,7 +5,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Initialize Gemini
 // Initialize Gemini
-const API_KEY = "AIzaSyBAQsPrws_XIm_pfYZJy-KYUSPmYC9Tbr8";
+const API_KEY = "AIzaSyA9JtziaDJhVxqnA9BmYsKqyb9zZVMS-Is";
 const genAI = new GoogleGenerativeAI(API_KEY);
 
 const MODELS_TO_TRY = ["gemini-2.0-flash", "gemini-1.0-pro", "gemini-pro-vision"];
