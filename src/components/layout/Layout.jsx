@@ -8,6 +8,7 @@ import { Button } from '../ui/Button';
 import { useAuth } from '../../context/AuthContext';
 import { ChatNote } from '../features/ChatNote';
 import { TranslatorHMF } from '../features/TranslatorHMF';
+import { VoiceToTextHMF } from '../features/VoiceToTextHMF';
 
 export const Layout = ({ children }) => {
     const { theme } = useTheme();
@@ -70,6 +71,7 @@ export const Layout = ({ children }) => {
             </main>
 
             {/* Chat Note Feature */}
+            <VoiceToTextHMF />
             <TranslatorHMF />
             <ChatNote />
 
