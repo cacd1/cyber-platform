@@ -1,45 +1,10 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Shield, Lock, ChevronRight, GraduationCap, Server, Database, Globe, ShieldCheck } from 'lucide-react';
+import { Shield, Lock, ChevronRight, GraduationCap, Server, Database, Globe } from 'lucide-react';
 import { Card } from '../components/ui/Card';
-import { Modal } from '../components/ui/Modal';
-import { Input } from '../components/ui/Input';
-import { Button } from '../components/ui/Button';
-import { useAuth } from '../context/AuthContext';
 
 export const Landing = () => {
     const navigate = useNavigate();
-    const { enterCode, hasAccessCode, isAuthenticated } = useAuth();
-    const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
-    const [code, setCode] = useState('');
-    const [error, setError] = useState('');
-
-    const handleStageClick = (stage) => {
-        if (stage.status !== 'open') return;
-
-        // If it's a secured path and user is not authenticated/has no code
-        if (stage.path === '/home') {
-            if (isAuthenticated || hasAccessCode) {
-                navigate(stage.path);
-            } else {
-                setIsCodeModalOpen(true);
-            }
-        } else {
-            navigate(stage.path);
-        }
-    };
-
-    const handleSubmitCode = async (e) => {
-        e.preventDefault();
-        const result = await enterCode(code);
-        if (result.success) {
-            setIsCodeModalOpen(false);
-            navigate('/home');
-        } else {
-            setError(result.error);
-        }
-    };
 
     const stages = [
         {
@@ -138,7 +103,7 @@ export const Landing = () => {
                                 ? 'cursor-pointer hover:border-cyber/50 hover:shadow-[0_0_30px_rgba(0,240,255,0.15)] ring-1 ring-cyan-500/20'
                                 : 'cursor-not-allowed opacity-70 grayscale hover:grayscale-0'
                                 }`}
-                            onClick={() => handleStageClick(stage)}
+                            onClick={() => stage.status === 'open' && navigate(stage.path)}
                         >
                             {/* Background Gradient Effect */}
                             <div className={`absolute inset-0 bg-gradient-to-br ${stage.color} opacity-0 group-hover:opacity-5 transition-opacity duration-500`} />
@@ -180,36 +145,6 @@ export const Landing = () => {
                     </motion.div>
                 ))}
             </motion.div>
-
-
-            {/* Access Code Modal */}
-            <Modal
-                isOpen={isCodeModalOpen}
-                onClose={() => setIsCodeModalOpen(false)}
-                title="ادخل كود شعبتك"
-            >
-                <form onSubmit={handleSubmitCode} className="flex flex-col gap-4 text-center">
-                    <div className="mx-auto p-4 bg-cyber/10 rounded-full text-cyber mb-2">
-                        <ShieldCheck size={32} />
-                    </div>
-                    <p className="text-gray-300 text-sm mb-2">
-                        ادخل الكود المكون من 9 خانات الذي حصلت عليه من ممثل شعبتك
-                    </p>
-                    <Input
-                        placeholder="اكتب هنا"
-                        value={code}
-                        onChange={(e) => setCode(e.target.value.toUpperCase())}
-                        className="text-center tracking-widest uppercase text-xl font-cyber"
-                        maxLength={9}
-                        dir="ltr"
-                    />
-                    {error && <p className="text-red-500 text-sm">{error}</p>}
-
-                    <Button type="submit" className="w-full mt-4">
-                        تأكيد الكود
-                    </Button>
-                </form>
-            </Modal>
-        </div >
+        </div>
     );
 };
