@@ -8,11 +8,11 @@ import { Input } from '../components/ui/Input';
 import { Modal } from '../components/ui/Modal';
 import { useAuth } from '../context/AuthContext';
 import { ADMIN_EMAIL } from '../constants';
-import { db } from '../lib/firebase'; // Added dbService
+import { db } from '../lib/firebase';
 import { collection, getDocs, addDoc, deleteDoc, doc, query, where } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../lib/firebase';
-import { dbService as dbServiceImport } from '../services/db'; // Import dbService properly
+import { dbService as dbServiceImport } from '../services/db';
 
 export const Admin = () => {
     const { user } = useAuth();
