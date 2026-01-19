@@ -55,7 +55,7 @@ export const TranslatorHMF = () => {
             setTranslatedText(response.text());
         } catch (error) {
             console.error("Translation Error:", error);
-            setTranslatedText("Error: Could not connect to AI service. Please try again.");
+            setTranslatedText("Error details: " + (error.toString()));
         } finally {
             setIsTranslating(false);
         }
