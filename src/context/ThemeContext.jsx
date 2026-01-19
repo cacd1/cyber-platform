@@ -23,7 +23,7 @@ export const ThemeProvider = ({ children }) => {
         const docRef = doc(db, 'settings', 'global');
         const unsubscribe = onSnapshot(docRef, (docSnap) => {
             if (docSnap.exists()) {
-                setSettings(docSnap.data());
+                setSettings(prev => ({ ...prev, ...docSnap.data() }));
             } else {
                 // Fallback defaults
                 setSettings({

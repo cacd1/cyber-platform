@@ -10,7 +10,20 @@ import { LectureList } from './pages/LectureList';
 import { Admin } from './pages/Admin';
 import ScrollToTop from './components/layout/ScrollToTop';
 
+import { useRegisterSW } from 'virtual:pwa-register/react';
+
 function App() {
+  useRegisterSW({
+    onRegistered(r) {
+      r && setInterval(() => { r.update(); }, 60 * 1000);
+    },
+    onNeedRefresh() {
+      if (confirm("New update available. Reload?")) {
+        window.location.reload();
+      }
+    }
+  });
+
   return (
     <BrowserRouter>
       <ScrollToTop />
