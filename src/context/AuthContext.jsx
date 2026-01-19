@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { auth, db } from '../lib/firebase';
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc, updateDoc } from 'firebase/firestore';
 
 const AuthContext = createContext();
 
@@ -39,6 +39,30 @@ export const AuthProvider = ({ children }) => {
         });
         return unsubscribe;
     }, []);
+
+    // Heartbeat: Update lastSeen every 4 minutes if user is logged in
+    useEffect(() => {
+        let interval;
+        if (user) {
+            const updateHeartbeat = async () => {
+                try {
+                    const repRef = doc(db, 'representatives', user.uid);
+                    await updateDoc(repRef, {
+                        lastSeen: new Date().toISOString()
+                    });
+                } catch (e) {
+                    console.error("Heartbeat error:", e);
+                }
+            };
+
+            // Initial update on mount/login
+            updateHeartbeat();
+
+            // Periodic update
+            interval = setInterval(updateHeartbeat, 4 * 60 * 1000);
+        }
+        return () => clearInterval(interval);
+    }, [user]);
 
     useEffect(() => {
         if (user) {

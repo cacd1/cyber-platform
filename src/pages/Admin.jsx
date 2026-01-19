@@ -29,6 +29,20 @@ export const Admin = () => {
     // Check if user is admin
     const isAdmin = user?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 
+    const getStatus = (lastSeen) => {
+        if (!lastSeen) return { color: 'bg-gray-500', text: 'لم يسجل دخول', state: 'never' };
+
+        const last = new Date(lastSeen);
+        const now = new Date();
+        const diffInMinutes = (now - last) / 1000 / 60;
+
+        if (diffInMinutes <= 5) {
+            return { color: 'bg-green-500', text: 'متصل الآن', state: 'online' };
+        } else {
+            return { color: 'bg-red-500', text: 'غير متصل', state: 'offline' }; // Was active, now offline
+        }
+    };
+
     // Fetch representatives & Settings
     useEffect(() => {
         if (isAdmin) {
@@ -349,9 +363,20 @@ export const Admin = () => {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4">
-                                    <span className="text-xs font-mono bg-cyber/20 text-cyber px-2 py-1 rounded">
-                                        {rep.accessCode}
-                                    </span>
+                                    <div className="flex flex-col items-end gap-1">
+                                        <span className="text-xs font-mono bg-cyber/20 text-cyber px-2 py-1 rounded">
+                                            {rep.accessCode}
+                                        </span>
+                                        {(() => {
+                                            const status = getStatus(rep.lastSeen);
+                                            return (
+                                                <div className="flex items-center gap-1.5" title={status.text}>
+                                                    <span className="text-[10px] text-gray-400">{status.text}</span>
+                                                    <div className={`w-2.5 h-2.5 rounded-full ${status.color} shadow-[0_0_5px_currentColor]`}></div>
+                                                </div>
+                                            );
+                                        })()}
+                                    </div>
                                     <Button
                                         variant="danger"
                                         className="p-2"
