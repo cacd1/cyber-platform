@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, X, Copy, Trash2, Languages, StopCircle, Type } from 'lucide-react';
+import { Mic, X, Copy, Trash2, StopCircle } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 
 export const VoiceToTextHMF = () => {
@@ -101,106 +101,114 @@ export const VoiceToTextHMF = () => {
     };
 
     return (
-        <div className="fixed bottom-[11rem] left-6 z-50 flex flex-col items-start gap-4 font-sans">
-            {/* Main Window */}
+        <>
+            {/* Main Window - Centered */}
             {isOpen && (
-                <div className={`w-80 backdrop-blur-xl border rounded-2xl overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300 shadow-2xl ${styles.container}`}>
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/20 backdrop-blur-[2px]">
+                    <div
+                        className={`w-[90vw] sm:w-[480px] max-w-lg backdrop-blur-xl border rounded-2xl overflow-hidden animate-in zoom-in-95 duration-300 shadow-2xl ${styles.container}`}
+                        onClick={(e) => e.stopPropagation()}
+                    >
 
-                    {/* Header */}
-                    <div className={`p-4 border-b border-white/10 flex justify-between items-center ${styles.header}`}>
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-emerald-500/20 text-emerald-400">
-                                <Mic size={20} />
+                        {/* Header */}
+                        <div className={`p-4 border-b border-white/10 flex justify-between items-center ${styles.header}`}>
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-emerald-500/20 text-emerald-400">
+                                    <Mic size={20} />
+                                </div>
+                                <div>
+                                    <h3 className={`font-bold text-sm tracking-wide ${styles.textMain}`}>Voice Note</h3>
+                                    <p className={`text-[10px] ${styles.textSub}`}>Speech to Text Converter</p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 className={`font-bold text-sm tracking-wide ${styles.textMain}`}>Voice Note</h3>
-                                <p className={`text-[10px] ${styles.textSub}`}>Speech to Text Converter</p>
-                            </div>
-                        </div>
-                        <button onClick={toggleOpen} className={`p-1.5 rounded-full hover:bg-black/10 transition-colors ${styles.textMain}`}>
-                            <X size={18} />
-                        </button>
-                    </div>
-
-                    {/* Controls & Language */}
-                    <div className="p-2 flex items-center justify-between border-b border-white/5">
-                        <div className="flex gap-1 bg-black/20 p-1 rounded-lg">
-                            <button
-                                onClick={() => setLang('ar-SA')}
-                                className={`px-3 py-1 text-xs rounded-md transition-all ${lang === 'ar-SA' ? 'bg-emerald-500/20 text-emerald-400 font-bold' : 'text-gray-400 hover:text-white'}`}
-                            >
-                                AR
-                            </button>
-                            <button
-                                onClick={() => setLang('en-US')}
-                                className={`px-3 py-1 text-xs rounded-md transition-all ${lang === 'en-US' ? 'bg-emerald-500/20 text-emerald-400 font-bold' : 'text-gray-400 hover:text-white'}`}
-                            >
-                                EN
+                            <button onClick={toggleOpen} className={`p-1.5 rounded-full hover:bg-black/10 transition-colors ${styles.textMain}`}>
+                                <X size={18} />
                             </button>
                         </div>
 
-                        {isListening && (
-                            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20">
-                                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                                <span className="text-[10px] text-red-400 font-bold">Listening...</span>
+                        {/* Controls & Language */}
+                        <div className="p-2 flex items-center justify-between border-b border-white/5">
+                            <div className="flex gap-1 bg-black/20 p-1 rounded-lg">
+                                <button
+                                    onClick={() => setLang('ar-SA')}
+                                    className={`px-3 py-1 text-xs rounded-md transition-all ${lang === 'ar-SA' ? 'bg-emerald-500/20 text-emerald-400 font-bold' : 'text-gray-400 hover:text-white'}`}
+                                >
+                                    AR
+                                </button>
+                                <button
+                                    onClick={() => setLang('en-US')}
+                                    className={`px-3 py-1 text-xs rounded-md transition-all ${lang === 'en-US' ? 'bg-emerald-500/20 text-emerald-400 font-bold' : 'text-gray-400 hover:text-white'}`}
+                                >
+                                    EN
+                                </button>
                             </div>
-                        )}
-                    </div>
 
-                    {/* Content */}
-                    <div className="p-4 flex flex-col gap-4">
-                        <div className="relative">
-                            <textarea
-                                value={transcript}
-                                onChange={(e) => setTranscript(e.target.value)}
-                                placeholder={isListening ? "Listening..." : "Click mic to start speaking..."}
-                                className={`w-full h-32 p-3 rounded-xl resize-none text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500/50 transition-all ${styles.textArea}`}
-                                dir="auto"
-                            />
-                            {transcript && (
-                                <div className="absolute bottom-2 left-2 flex gap-2">
-                                    <button
-                                        onClick={handleCopy}
-                                        className="p-1.5 bg-black/20 hover:bg-emerald-500/20 text-gray-400 hover:text-emerald-400 rounded-lg transition-colors"
-                                        title="Copy Text"
-                                    >
-                                        <Copy size={14} />
-                                    </button>
-                                    <button
-                                        onClick={handleClear}
-                                        className="p-1.5 bg-black/20 hover:bg-red-500/20 text-gray-400 hover:text-red-400 rounded-lg transition-colors"
-                                        title="Clear Text"
-                                    >
-                                        <Trash2 size={14} />
-                                    </button>
+                            {isListening && (
+                                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20">
+                                    <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                                    <span className="text-[10px] text-red-400 font-bold">Listening...</span>
                                 </div>
                             )}
                         </div>
 
-                        <button
-                            onClick={toggleListening}
-                            className={`w-full py-3 rounded-xl font-bold text-sm shadow-lg flex items-center justify-center gap-2 transition-all ${isListening
+                        {/* Content */}
+                        <div className="p-4 flex flex-col gap-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                            <div className="relative">
+                                <textarea
+                                    value={transcript}
+                                    onChange={(e) => setTranscript(e.target.value)}
+                                    placeholder={isListening ? "Listening..." : "Click mic to start speaking..."}
+                                    className={`w-full min-h-[160px] p-3 rounded-xl resize-none text-base focus:outline-none focus:ring-1 focus:ring-emerald-500/50 transition-all ${styles.textArea}`}
+                                    dir="auto"
+                                    style={{ fontSize: '16px' }}
+                                />
+                                {transcript && (
+                                    <div className="absolute bottom-2 left-2 flex gap-2">
+                                        <button
+                                            onClick={handleCopy}
+                                            className="p-1.5 bg-black/20 hover:bg-emerald-500/20 text-gray-400 hover:text-emerald-400 rounded-lg transition-colors"
+                                            title="Copy Text"
+                                        >
+                                            <Copy size={14} />
+                                        </button>
+                                        <button
+                                            onClick={handleClear}
+                                            className="p-1.5 bg-black/20 hover:bg-red-500/20 text-gray-400 hover:text-red-400 rounded-lg transition-colors"
+                                            title="Clear Text"
+                                        >
+                                            <Trash2 size={14} />
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
+                            <button
+                                onClick={toggleListening}
+                                className={`w-full py-3 rounded-xl font-bold text-sm shadow-lg flex items-center justify-center gap-2 transition-all ${isListening
                                     ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse'
                                     : 'bg-emerald-600 hover:bg-emerald-500 text-white hover:scale-[1.02]'
-                                }`}
-                        >
-                            {isListening ? <StopCircle size={18} /> : <Mic size={18} />}
-                            {isListening ? 'Stop Recording' : 'Start Recording'}
-                        </button>
+                                    }`}
+                            >
+                                {isListening ? <StopCircle size={18} /> : <Mic size={18} />}
+                                {isListening ? 'Stop Recording' : 'Start Recording'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
 
             {/* Toggle Button */}
-            <button
-                onClick={toggleOpen}
-                className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 border border-white/10 ${isOpen
+            <div className="fixed bottom-36 left-4 right-4 sm:left-6 sm:right-auto z-[90] flex flex-col items-start gap-3 pointer-events-none">
+                <button
+                    onClick={toggleOpen}
+                    className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center transition-all duration-300 border border-white/10 pointer-events-auto ${isOpen
                         ? 'bg-red-500 text-white rotate-90 scale-90'
                         : styles.floatingBtn
-                    }`}
-            >
-                {isOpen ? <X size={20} /> : <Mic size={22} />}
-            </button>
-        </div>
+                        }`}
+                >
+                    {isOpen ? <X size={18} /> : <Mic size={20} />}
+                </button>
+            </div>
+        </>
     );
 };
