@@ -411,7 +411,7 @@ export const LectureList = () => {
                                                                                         window.URL.revokeObjectURL(url);
                                                                                     } catch (err) {
                                                                                         console.error("Download failed", err);
-                                                                                        window.open(item.url, '_blank');
+                                                                                        window.open(item.url, '_blank', 'noopener,noreferrer');
                                                                                     }
                                                                                 }}
                                                                                 className="p-3 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-xl transition-colors cursor-pointer"
