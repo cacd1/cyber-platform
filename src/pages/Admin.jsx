@@ -167,7 +167,7 @@ export const Admin = () => {
 
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                <Card className="p-4 bg-violet-500/10 border-violet-500/20 backdrop-blur-md">
+                <Card className="p-4 bg-violet-500/10 border-violet-500/20">
                     <div className="flex items-center gap-3">
                         <Users className="text-violet-400" size={24} />
                         <div>
@@ -179,14 +179,52 @@ export const Admin = () => {
             </div>
 
             {/* Site Settings */}
-            <Card className="mb-8 p-0 overflow-hidden border-violet-500/30 backdrop-blur-md">
+            <Card className="mb-8 p-0 overflow-hidden border-violet-500/30">
                 <div className="p-4 bg-violet-500/10 border-b border-violet-500/20">
                     <div className="flex items-center gap-3">
                         <Settings className="text-violet-400" size={24} />
                         <h2 className="text-lg font-bold text-white">إعدادات الموقع العامة</h2>
                     </div>
                 </div>
-                <div className="p-6 grid grid-cols-1 gap-8">
+                <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Theme Settings */}
+                    <div>
+                        <h3 className="text-gray-400 mb-4 font-bold flex items-center gap-2">
+                            <Moon size={18} /> التحكم بالثيم (Theme)
+                        </h3>
+                        <div className="space-y-3">
+                            <label className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition">
+                                <span className="text-white">حرية الاختيار للطالب</span>
+                                <input
+                                    type="radio"
+                                    name="theme"
+                                    checked={settings.forcedTheme === 'none'}
+                                    onChange={() => handleUpdateSettings({ forcedTheme: 'none' })}
+                                    className="w-4 h-4 accent-cyber"
+                                />
+                            </label>
+                            <label className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition">
+                                <span className="text-white">إجبار الوضع المظلم (Dark)</span>
+                                <input
+                                    type="radio"
+                                    name="theme"
+                                    checked={settings.forcedTheme === 'dark'}
+                                    onChange={() => handleUpdateSettings({ forcedTheme: 'dark' })}
+                                    className="w-4 h-4 accent-cyber"
+                                />
+                            </label>
+                            <label className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition">
+                                <span className="text-white">إجبار الوضع المضيء (Light)</span>
+                                <input
+                                    type="radio"
+                                    name="theme"
+                                    checked={settings.forcedTheme === 'light'}
+                                    onChange={() => handleUpdateSettings({ forcedTheme: 'light' })}
+                                    className="w-4 h-4 accent-cyber"
+                                />
+                            </label>
+                        </div>
+                    </div>
 
 
                     {/* Feature Toggles */}
@@ -288,7 +326,7 @@ export const Admin = () => {
             </div>
 
             {/* Representatives List */}
-            <Card className="p-0 overflow-hidden backdrop-blur-md">
+            <Card className="p-0 overflow-hidden">
                 <div className="p-4 border-b border-white/10">
                     <h2 className="text-lg font-bold text-white">قائمة الممثلين</h2>
                 </div>
