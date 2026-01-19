@@ -41,26 +41,41 @@ export const LectureList = () => {
 
     const canEdit = !!user;
 
-    // Helper: Is new? (4 hours)
-    const isNew = (timestamp) => {
-        if (!timestamp) return false;
-        const diff = Date.now() - new Date(timestamp).getTime();
-        return diff < 4 * 60 * 60 * 1000; // 4 hours
+    // Helper: Check for updates (Lecture creation or new items)
+    const getLatestUpdate = (lecture) => {
+        let latest = new Date(lecture.createdAt).getTime();
+
+        if (lecture.content?.items) {
+            lecture.content.items.forEach(item => {
+                if (item.addedAt) {
+                    const itemTime = new Date(item.addedAt).getTime();
+                    if (itemTime > latest) latest = itemTime;
+                }
+            });
+        }
+        return latest;
     };
 
-    // Helper: Is viewed locally?
-    const isViewed = (id) => {
-        const viewed = JSON.parse(localStorage.getItem('viewedItems') || '[]');
-        return viewed.includes(id);
+    const hasNewContent = (lecture) => {
+        const latestUpdate = getLatestUpdate(lecture);
+        const now = Date.now();
+
+        // 1. Check if update is recent (< 4 hours)
+        const isRecent = (now - latestUpdate) < (4 * 60 * 60 * 1000);
+        if (!isRecent) return false;
+
+        // 2. Check if user viewed it AFTER this update
+        const viewedMap = JSON.parse(localStorage.getItem('viewedLecturesMap') || '{}');
+        const lastViewed = viewedMap[lecture.id] || 0;
+
+        return lastViewed < latestUpdate;
     };
 
     const markAsViewed = (id) => {
-        const viewed = JSON.parse(localStorage.getItem('viewedItems') || '[]');
-        if (!viewed.includes(id)) {
-            localStorage.setItem('viewedItems', JSON.stringify([...viewed, id]));
-            // Force re-render to hide badge immediately
-            setLectures([...lectures]);
-        }
+        const viewedMap = JSON.parse(localStorage.getItem('viewedLecturesMap') || '{}');
+        viewedMap[id] = Date.now();
+        localStorage.setItem('viewedLecturesMap', JSON.stringify(viewedMap));
+        setLectures([...lectures]); // Force re-render
     };
 
     useEffect(() => {
@@ -309,8 +324,8 @@ export const LectureList = () => {
                             >
                                 <h3 className="text-lg font-bold text-white flex items-center gap-2">
                                     {lecture.name}
-                                    {isNew(lecture.createdAt) && !isViewed(lecture.id) && (
-                                        <span className="animate-pulse bg-yellow-500 text-black text-[10px] px-1.5 py-0.5 rounded font-bold">
+                                    {hasNewContent(lecture) && (
+                                        <span className="animate-pulse bg-yellow-500 text-black text-[10px] px-1.5 py-0.5 rounded font-bold shadow-[0_0_10px_rgba(234,179,8,0.5)]">
                                             NEW
                                         </span>
                                     )}
