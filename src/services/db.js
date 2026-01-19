@@ -7,7 +7,8 @@ import {
     doc,
     getDocs,
     query,
-    where
+    where,
+    setDoc
 } from 'firebase/firestore';
 
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
@@ -153,5 +154,49 @@ export const dbService = {
 
     deleteFile: async (publicId) => {
         if (!publicId) return;
+    },
+
+    // Global Settings
+    getSettings: async () => {
+        try {
+            const docRef = doc(db, 'settings', 'global');
+            const docSnap = await getDocs(query(collection(db, 'settings'))); // Check if exists
+
+            // Note: Since ID is fixed 'global', we can use getDoc. 
+            // However, to keep it robust if collection is empty:
+            if (docSnap.empty) {
+                // Initialize defaults if not exists
+                await setDoc(doc(db, 'settings', 'global'), {
+                    forcedTheme: 'none',
+                    showTranslator: true,
+                    showVoiceAI: true
+                });
+                return { forcedTheme: 'none', showTranslator: true, showVoiceAI: true };
+            }
+
+            // We know 'global' is the ID we use
+            const settingsSnap = await getDocs(query(collection(db, 'settings')));
+            const settings = settingsSnap.docs.find(d => d.id === 'global');
+
+            if (settings) return settings.data();
+
+            return { forcedTheme: 'none', showTranslator: true, showVoiceAI: true };
+        } catch (error) {
+            console.error("Error fetching settings:", error);
+            // Return defaults on error to not break app
+            return { forcedTheme: 'none', showTranslator: true, showVoiceAI: true };
+        }
+    },
+
+    updateSettings: async (settings) => {
+        try {
+            const docRef = doc(db, 'settings', 'global');
+            // setDoc with merge is safer for creating if doesn't exist
+            await setDoc(docRef, settings, { merge: true });
+            return settings;
+        } catch (error) {
+            console.error("Error updating settings:", error);
+            throw error;
+        }
     }
 };

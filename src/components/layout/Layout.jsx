@@ -11,7 +11,7 @@ import { TranslatorHMF } from '../features/TranslatorHMF';
 import { VoiceToTextHMF } from '../features/VoiceToTextHMF';
 
 export const Layout = ({ children }) => {
-    const { theme } = useTheme();
+    const { theme, settings } = useTheme();
     const { login } = useAuth();
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
@@ -70,9 +70,9 @@ export const Layout = ({ children }) => {
                 {children}
             </main>
 
-            {/* Chat Note Feature */}
-            <VoiceToTextHMF />
-            <TranslatorHMF />
+            {/* Chat Note Feature - Conditioned on Settings */}
+            {settings?.showVoiceAI && <VoiceToTextHMF />}
+            {settings?.showTranslator && <TranslatorHMF />}
             <ChatNote />
 
             {/* Login Modal */}

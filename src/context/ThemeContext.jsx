@@ -1,35 +1,58 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { dbService } from '../services/db';
 
 const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-    const [theme, setTheme] = useState(() => {
+    // Local theme preference
+    const [localTheme, setLocalTheme] = useState(() => {
         return localStorage.getItem('theme') || 'default';
     });
 
+    // Global settings from DB
+    const [settings, setSettings] = useState({ forcedTheme: 'none', showTranslator: true, showVoiceAI: true });
+
+    // 1. Fetch settings on mount (and periodically/realtime if needed)
+    useEffect(() => {
+        const fetchSettings = async () => {
+            const data = await dbService.getSettings();
+            setSettings(data);
+        };
+        fetchSettings();
+
+        // Optional: Poll every 30s to keep in sync without complex listeners
+        const interval = setInterval(fetchSettings, 30000);
+        return () => clearInterval(interval);
+    }, []);
+
+    // 2. Determine effective theme
+    const activeTheme = settings.forcedTheme !== 'none' ? settings.forcedTheme : localTheme;
+
+    // 3. Apply theme to document
     useEffect(() => {
         const root = window.document.documentElement;
-
-        // Always remove both first to avoid conflicts
         root.classList.remove('dark');
 
-        // If theme is dark or default (which is dark in this app), add 'dark' class
-        if (theme === 'dark' || theme === 'default') {
+        if (activeTheme === 'dark' || activeTheme === 'default') {
             root.classList.add('dark');
-        } else {
-            // explicit light mode, do nothing (ensure 'dark' is gone)
         }
 
-        root.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-    }, [theme]);
+        root.setAttribute('data-theme', activeTheme);
+
+        // Only save to local storage if it's the user's choice
+        if (settings.forcedTheme === 'none') {
+            localStorage.setItem('theme', activeTheme);
+        }
+    }, [activeTheme, settings.forcedTheme]);
 
     const toggleTheme = (newTheme) => {
-        setTheme(newTheme);
+        if (settings.forcedTheme === 'none') {
+            setLocalTheme(newTheme);
+        }
     };
 
     return (
-        <ThemeContext.Provider value={{ theme, toggleTheme }}>
+        <ThemeContext.Provider value={{ theme: activeTheme, toggleTheme, settings }}>
             {children}
         </ThemeContext.Provider>
     );

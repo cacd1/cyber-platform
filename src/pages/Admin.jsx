@@ -1,21 +1,23 @@
 import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Shield, UserPlus, Trash2, Users, Key, Mail, User, AlertTriangle } from 'lucide-react';
+import { Shield, UserPlus, Trash2, Users, Key, Mail, User, AlertTriangle, Settings, Moon, Zap } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Modal } from '../components/ui/Modal';
 import { useAuth } from '../context/AuthContext';
 import { ADMIN_EMAIL } from '../constants';
-import { db } from '../lib/firebase';
+import { db, dbService } from '../lib/firebase'; // Added dbService
 import { collection, getDocs, addDoc, deleteDoc, doc, query, where } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../lib/firebase';
+import { dbService as dbServiceImport } from '../services/db'; // Import dbService properly
 
 export const Admin = () => {
     const { user } = useAuth();
     const [representatives, setRepresentatives] = useState([]);
+    const [settings, setSettings] = useState({ forcedTheme: 'none', showTranslator: true, showVoiceAI: true });
     const [loading, setLoading] = useState(true);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -27,25 +29,48 @@ export const Admin = () => {
     // Check if user is admin
     const isAdmin = user?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 
-    // Fetch representatives
+    // Fetch representatives & Settings
     useEffect(() => {
         if (isAdmin) {
-            fetchRepresentatives();
+            fetchData();
         }
     }, [isAdmin]);
 
-    const fetchRepresentatives = async () => {
+    const fetchData = async () => {
         try {
             setLoading(true);
-            const querySnapshot = await getDocs(collection(db, 'representatives'));
-            const reps = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setRepresentatives(reps);
+            const [repsSnapshot, settingsData] = await Promise.all([
+                getDocs(collection(db, 'representatives')),
+                dbServiceImport.getSettings()
+            ]);
+
+            setRepresentatives(repsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+            setSettings(settingsData);
         } catch (err) {
-            console.error('Error fetching representatives:', err);
-            setError('فشل في تحميل قائمة الممثلين');
+            console.error('Error fetching data:', err);
+            setError('فشل في تحميل البيانات');
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleUpdateSettings = async (updates) => {
+        try {
+            const newSettings = { ...settings, ...updates };
+            setSettings(newSettings); // Optimistic UI update
+            await dbServiceImport.updateSettings(newSettings);
+            setSuccess('تم تحديث الإعدادات بنجاح');
+            setTimeout(() => setSuccess(''), 2000);
+        } catch (err) {
+            console.error('Error updating settings:', err);
+            setError('فشل في حفظ الإعدادات');
+            fetchData(); // Revert on error
+        }
+    };
+
+    // Existing functions...
+    const fetchRepresentatives = async () => {
+        // Redundant but kept for structure if needed, replaced by fetchData
     };
 
     const handleAddRepresentative = async (e) => {
@@ -152,6 +177,96 @@ export const Admin = () => {
                     </div>
                 </Card>
             </div>
+
+            {/* Site Settings */}
+            <Card className="mb-8 p-0 overflow-hidden border-violet-500/30">
+                <div className="p-4 bg-violet-500/10 border-b border-violet-500/20">
+                    <div className="flex items-center gap-3">
+                        <Settings className="text-violet-400" size={24} />
+                        <h2 className="text-lg font-bold text-white">إعدادات الموقع العامة</h2>
+                    </div>
+                </div>
+                <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Theme Settings */}
+                    <div>
+                        <h3 className="text-gray-400 mb-4 font-bold flex items-center gap-2">
+                            <Moon size={18} /> التحكم بالثيم (Theme)
+                        </h3>
+                        <div className="space-y-3">
+                            <label className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition">
+                                <span className="text-white">حرية الاختيار للطالب</span>
+                                <input
+                                    type="radio"
+                                    name="theme"
+                                    checked={settings.forcedTheme === 'none'}
+                                    onChange={() => handleUpdateSettings({ forcedTheme: 'none' })}
+                                    className="w-4 h-4 accent-cyber"
+                                />
+                            </label>
+                            <label className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition">
+                                <span className="text-white">إجبار الوضع المظلم (Dark)</span>
+                                <input
+                                    type="radio"
+                                    name="theme"
+                                    checked={settings.forcedTheme === 'dark'}
+                                    onChange={() => handleUpdateSettings({ forcedTheme: 'dark' })}
+                                    className="w-4 h-4 accent-cyber"
+                                />
+                            </label>
+                            <label className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10 cursor-pointer hover:bg-white/10 transition">
+                                <span className="text-white">إجبار الوضع المضيء (Light)</span>
+                                <input
+                                    type="radio"
+                                    name="theme"
+                                    checked={settings.forcedTheme === 'light'}
+                                    onChange={() => handleUpdateSettings({ forcedTheme: 'light' })}
+                                    className="w-4 h-4 accent-cyber"
+                                />
+                            </label>
+                        </div>
+                    </div>
+
+                    {/* Feature Toggles */}
+                    <div>
+                        <h3 className="text-gray-400 mb-4 font-bold flex items-center gap-2">
+                            <Zap size={18} /> تفعيل الأدوات
+                        </h3>
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-white/10">
+                                <div>
+                                    <p className="text-white font-bold">المترجم الفوري</p>
+                                    <p className="text-xs text-gray-500">لزر الترجمة العائم</p>
+                                </div>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        className="sr-only peer"
+                                        checked={settings.showTranslator}
+                                        onChange={(e) => handleUpdateSettings({ showTranslator: e.target.checked })}
+                                    />
+                                    <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-cyber rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyber"></div>
+                                </label>
+                            </div>
+
+                            <div className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-white/10">
+                                <div>
+                                    <p className="text-white font-bold">المساعد الصوتي (AI)</p>
+                                    <p className="text-xs text-gray-500">خدمة تحويل الصوت لنص</p>
+                                </div>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        className="sr-only peer"
+                                        checked={settings.showVoiceAI}
+                                        onChange={(e) => handleUpdateSettings({ showVoiceAI: e.target.checked })}
+                                    />
+                                    <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-cyber rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyber"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </Card>
 
             {/* Add Button */}
             <div className="mb-6">

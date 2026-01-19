@@ -72,11 +72,17 @@ export const HamburgerMenu = ({ onLoginClick }) => {
 
                             <div className="flex flex-col gap-4">
                                 <h4 className="text-sm text-gray-500 uppercase tracking-wider font-bold">Theme</h4>
-                                <div className="grid grid-cols-3 gap-2">
-                                    <button onClick={() => toggleTheme('dark')} className={`p-2 rounded-md border ${theme === 'dark' ? 'border-cyber bg-cyber/10 text-white' : 'border-gray-700 text-gray-400'}`}>Dark</button>
-                                    <button onClick={() => toggleTheme('light')} className={`p-2 rounded-md border ${theme === 'light' ? 'border-cyber bg-cyber/10 text-white' : 'border-gray-700 text-gray-400'}`}>Light</button>
-                                    <button onClick={() => toggleTheme('default')} className={`p-2 rounded-md border ${theme === 'default' ? 'border-cyber bg-cyber/10 text-white' : 'border-gray-700 text-gray-400'}`}>Default</button>
-                                </div>
+                                {theme.settings?.forcedTheme !== 'none' ? (
+                                    <div className="text-sm text-yellow-500 bg-yellow-500/10 p-2 rounded border border-yellow-500/20 text-center">
+                                        تم تثبيت الثيم من قبل الإدارة
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-3 gap-2">
+                                        <button onClick={() => toggleTheme('dark')} className={`p-2 rounded-md border ${theme === 'dark' ? 'border-cyber bg-cyber/10 text-white' : 'border-gray-700 text-gray-400'}`}>Dark</button>
+                                        <button onClick={() => toggleTheme('light')} className={`p-2 rounded-md border ${theme === 'light' ? 'border-cyber bg-cyber/10 text-white' : 'border-gray-700 text-gray-400'}`}>Light</button>
+                                        <button onClick={() => toggleTheme('default')} className={`p-2 rounded-md border ${theme === 'default' ? 'border-cyber bg-cyber/10 text-white' : 'border-gray-700 text-gray-400'}`}>Default</button>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="flex flex-col gap-4">
