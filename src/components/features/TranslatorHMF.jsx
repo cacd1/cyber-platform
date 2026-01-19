@@ -4,12 +4,11 @@ import { useTheme } from '../../context/ThemeContext';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Initialize Gemini
+// Initialize Gemini
 const API_KEY = "AIzaSyBAQsPrws_XIm_pfYZJy-KYUSPmYC9Tbr8";
 const genAI = new GoogleGenerativeAI(API_KEY);
-const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash-001",
-    systemInstruction: "You are a specialized Cybersecurity Translator for students. Translate the given text or image text between Arabic and English. If the text contains cybersecurity terms (e.g., Phishing, Malware, DDOS), translate them accurately and provide a very brief explanation in parentheses if necessary. Keep the tone professional and educational."
-});
+
+const MODELS_TO_TRY = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro"];
 
 export const TranslatorHMF = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -47,9 +46,36 @@ export const TranslatorHMF = () => {
                 };
             }
 
-            const result = imagePart
-                ? await model.generateContent([prompt || "Translate this image content to Arabic/English", imagePart])
-                : await model.generateContent(prompt);
+            let result = null;
+            let lastError = null;
+
+            // Try models in order
+            for (const modelName of MODELS_TO_TRY) {
+                try {
+                    // Config for this attempt
+                    const modelConfig = { model: modelName };
+                    if (modelName.includes("1.5")) {
+                        modelConfig.systemInstruction = "You are a specialized Cybersecurity Translator for students. Translate the given text or image text between Arabic and English. If the text contains cybersecurity terms (e.g., Phishing, Malware, DDOS), translate them accurately and provide a very brief explanation in parentheses if necessary. Keep the tone professional and educational.";
+                    }
+
+                    const model = genAI.getGenerativeModel(modelConfig);
+
+                    if (imagePart) {
+                        result = await model.generateContent([prompt || "Translate this image content to Arabic/English", imagePart]);
+                    } else {
+                        result = await model.generateContent(prompt);
+                    }
+
+                    if (result && result.response) {
+                        break; // Success!
+                    }
+                } catch (e) {
+                    lastError = e;
+                    continue; // Try next
+                }
+            }
+
+            if (!result) throw lastError || new Error("All models failed");
 
             const response = await result.response;
             setTranslatedText(response.text());
