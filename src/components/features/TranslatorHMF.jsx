@@ -1,6 +1,15 @@
 import React, { useState, useRef } from 'react';
 import { Languages, X, Camera, Image as ImageIcon, Send, ArrowRightLeft, ScanText, Loader2 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+// Initialize Gemini
+const API_KEY = "AIzaSyBAQsPrws_XIm_pfYZJy-KYUSPmYC9Tbr8";
+const genAI = new GoogleGenerativeAI(API_KEY);
+const model = genAI.getGenerativeModel({
+    model: "gemini-1.5-flash",
+    systemInstruction: "You are a specialized Cybersecurity Translator for students. Translate the given text or image text between Arabic and English. If the text contains cybersecurity terms (e.g., Phishing, Malware, DDOS), translate them accurately and provide a very brief explanation in parentheses if necessary. Keep the tone professional and educational."
+});
 
 export const TranslatorHMF = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -17,26 +26,39 @@ export const TranslatorHMF = () => {
 
     const toggleOpen = () => setIsOpen(!isOpen);
 
-    const handleTranslate = () => {
+    const handleTranslate = async () => {
         if (!inputText.trim() && !selectedImage) return;
 
         setIsTranslating(true);
-        // Simulate API call
-        setTimeout(() => {
-            // Simple mock logic
+        setTranslatedText('');
+
+        try {
+            let prompt = inputText;
+            let imagePart = null;
+
             if (selectedImage) {
-                setTranslatedText("Simulated Image Translation: \nDetected Text: 'Hello World'\nTranslation: 'مرحبا بالعالم'");
-            } else {
-                // Very basic mock for demo
-                const isArabic = /[\u0600-\u06FF]/.test(inputText);
-                if (isArabic) {
-                    setTranslatedText("Translation (En): " + inputText);
-                } else {
-                    setTranslatedText("الترجمة (Ar): " + inputText);
-                }
+                // Remove data URL prefix for Gemini
+                const base64Data = selectedImage.split(',')[1];
+                imagePart = {
+                    inlineData: {
+                        data: base64Data,
+                        mimeType: "image/jpeg",
+                    },
+                };
             }
+
+            const result = imagePart
+                ? await model.generateContent([prompt || "Translate this image content to Arabic/English", imagePart])
+                : await model.generateContent(prompt);
+
+            const response = await result.response;
+            setTranslatedText(response.text());
+        } catch (error) {
+            console.error("Translation Error:", error);
+            setTranslatedText("Error: Could not connect to AI service. Please try again.");
+        } finally {
             setIsTranslating(false);
-        }, 1500);
+        }
     };
 
     const handleImageUpload = (e) => {
