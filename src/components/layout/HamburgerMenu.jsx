@@ -8,9 +8,12 @@ import { Button } from '../ui/Button';
 export const HamburgerMenu = ({ onLoginClick }) => {
     const [isOpen, setIsOpen] = useState(false);
     const { user, logout, hasAccessCode, exitCode, enterCode } = useAuth();
-    const { theme, toggleTheme } = useTheme();
+    const { theme, toggleTheme, settings } = useTheme();
 
     const toggleOpen = () => setIsOpen(!isOpen);
+
+    const isAlertVisible = settings?.showAlert && settings?.alertMessage;
+    const topClass = isAlertVisible ? 'top-16' : 'top-4';
 
     const handleLogoutRep = () => {
         logout();
@@ -36,7 +39,7 @@ export const HamburgerMenu = ({ onLoginClick }) => {
         <>
             <button
                 onClick={toggleOpen}
-                className="fixed top-4 right-4 z-50 p-2 bg-black/50 backdrop-blur-md rounded-lg border border-white/10 hover:border-cyber text-white transition-all shadow-[0_0_15px_rgba(0,0,0,0.5)]"
+                className={`fixed ${topClass} right-4 z-50 p-2 bg-black/50 backdrop-blur-md rounded-lg border border-white/10 hover:border-cyber text-white transition-all shadow-[0_0_15px_rgba(0,0,0,0.5)]`}
             >
                 {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
