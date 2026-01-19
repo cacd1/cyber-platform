@@ -75,7 +75,7 @@ export const HamburgerMenu = ({ onLoginClick }) => {
 
                             <div className="flex flex-col gap-4">
                                 <h4 className="text-sm text-gray-500 uppercase tracking-wider font-bold">Theme</h4>
-                                {theme.settings?.forcedTheme !== 'none' ? (
+                                {settings?.forcedTheme && settings.forcedTheme !== 'none' ? (
                                     <div className="text-sm text-yellow-500 bg-yellow-500/10 p-2 rounded border border-yellow-500/20 text-center">
                                         تم تثبيت الثيم من قبل الإدارة
                                     </div>
