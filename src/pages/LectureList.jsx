@@ -41,6 +41,28 @@ export const LectureList = () => {
 
     const canEdit = !!user;
 
+    // Helper: Is new? (4 hours)
+    const isNew = (timestamp) => {
+        if (!timestamp) return false;
+        const diff = Date.now() - new Date(timestamp).getTime();
+        return diff < 4 * 60 * 60 * 1000; // 4 hours
+    };
+
+    // Helper: Is viewed locally?
+    const isViewed = (id) => {
+        const viewed = JSON.parse(localStorage.getItem('viewedItems') || '[]');
+        return viewed.includes(id);
+    };
+
+    const markAsViewed = (id) => {
+        const viewed = JSON.parse(localStorage.getItem('viewedItems') || '[]');
+        if (!viewed.includes(id)) {
+            localStorage.setItem('viewedItems', JSON.stringify([...viewed, id]));
+            // Force re-render to hide badge immediately
+            setLectures([...lectures]);
+        }
+    };
+
     useEffect(() => {
         window.scrollTo(0, 0);
         const fetchLectures = async () => {
@@ -287,6 +309,11 @@ export const LectureList = () => {
                             >
                                 <h3 className="text-lg font-bold text-white flex items-center gap-2">
                                     {lecture.name}
+                                    {isNew(lecture.createdAt) && !isViewed(lecture.id) && (
+                                        <span className="animate-pulse bg-yellow-500 text-black text-[10px] px-1.5 py-0.5 rounded font-bold">
+                                            NEW
+                                        </span>
+                                    )}
                                 </h3>
                                 <div className="flex items-center gap-3">
                                     {canEdit && (
@@ -307,6 +334,7 @@ export const LectureList = () => {
                                         animate={{ height: 'auto' }}
                                         exit={{ height: 0 }}
                                         className="overflow-hidden bg-black/10"
+                                        onAnimationComplete={() => markAsViewed(lecture.id)} // Mark as viewed when expanded
                                     >
                                         <div className="p-4 border-t border-white/5">
                                             {lecture.content?.items && lecture.content.items.length > 0 ? (
