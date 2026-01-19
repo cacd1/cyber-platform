@@ -1,13 +1,15 @@
 import React, { useState, useRef } from 'react';
-import { Languages, X, Camera, Image as ImageIcon, ArrowRightLeft, ScanText, Loader2 } from 'lucide-react';
+import { Languages, X, Camera, Image as ImageIcon, ArrowRightLeft, ScanText, Loader2, BookOpen } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import { CYBER_GLOSSARY } from '../../data/cyberGlossary';
 
 export const TranslatorHMF = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [inputText, setInputText] = useState('');
     const [translatedText, setTranslatedText] = useState('');
     const [isTranslating, setIsTranslating] = useState(false);
-    const [mode, setMode] = useState('text');
+    const [mode, setMode] = useState('text'); // text, glossary
+    const [glossaryResults, setGlossaryResults] = useState([]);
     const fileInputRef = useRef(null);
     const cameraInputRef = useRef(null);
     const { theme } = useTheme();
@@ -19,18 +21,35 @@ export const TranslatorHMF = () => {
     // Detect if text is Arabic
     const isArabic = (text) => /[\u0600-\u06FF]/.test(text);
 
+    // Search glossary for terms
+    const searchGlossary = (text) => {
+        const searchTerm = text.toLowerCase().trim();
+        if (!searchTerm) return [];
+
+        return CYBER_GLOSSARY.filter(term =>
+            term.en.toLowerCase().includes(searchTerm) ||
+            term.ar.includes(searchTerm)
+        ).slice(0, 10); // Limit to 10 results
+    };
+
     const handleTranslate = async () => {
         if (!inputText.trim()) return;
 
         setIsTranslating(true);
         setTranslatedText('');
+        setGlossaryResults([]);
 
         try {
-            // Detect language direction
+            // First, search glossary for cybersecurity terms
+            const glossaryMatches = searchGlossary(inputText);
+            if (glossaryMatches.length > 0) {
+                setGlossaryResults(glossaryMatches);
+            }
+
+            // Then, use translation API
             const sourceLang = isArabic(inputText) ? 'ar' : 'en';
             const targetLang = sourceLang === 'ar' ? 'en' : 'ar';
 
-            // Use MyMemory Translation API (Free, no key required)
             const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(inputText)}&langpair=${sourceLang}|${targetLang}`;
             const response = await fetch(url);
             const data = await response.json();
@@ -45,6 +64,11 @@ export const TranslatorHMF = () => {
         } finally {
             setIsTranslating(false);
         }
+    };
+
+    const handleGlossarySearch = () => {
+        if (!inputText.trim()) return;
+        setGlossaryResults(searchGlossary(inputText));
     };
 
     const handleImageUpload = (e) => {
@@ -88,7 +112,7 @@ export const TranslatorHMF = () => {
                             </div>
                             <div>
                                 <h3 className={`font-bold text-sm tracking-wide ${styles.textMain}`}>Translator HMF</h3>
-                                <p className={`text-[10px] ${styles.textSub}`}>Ar ↔ En Instant Translation</p>
+                                <p className={`text-[10px] ${styles.textSub}`}>Ar ↔ En + Cyber Terms</p>
                             </div>
                         </div>
                         <button onClick={toggleOpen} className={`p-1.5 rounded-full hover:bg-black/10 transition-colors ${styles.textMain}`}>
@@ -99,11 +123,18 @@ export const TranslatorHMF = () => {
                     {/* Controls */}
                     <div className="p-2 grid grid-cols-3 gap-2 border-b border-white/5">
                         <button
-                            onClick={() => { setMode('text'); setTranslatedText(''); }}
+                            onClick={() => { setMode('text'); setGlossaryResults([]); setTranslatedText(''); }}
                             className={`p-2 rounded-lg flex flex-col items-center gap-1 text-[10px] transition-all ${mode === 'text' ? 'bg-cyan-500/20 text-cyan-400' : 'hover:bg-white/5 text-gray-400'}`}
                         >
                             <ScanText size={16} />
-                            <span>Text</span>
+                            <span>Translate</span>
+                        </button>
+                        <button
+                            onClick={() => { setMode('glossary'); setTranslatedText(''); handleGlossarySearch(); }}
+                            className={`p-2 rounded-lg flex flex-col items-center gap-1 text-[10px] transition-all ${mode === 'glossary' ? 'bg-cyan-500/20 text-cyan-400' : 'hover:bg-white/5 text-gray-400'}`}
+                        >
+                            <BookOpen size={16} />
+                            <span>Glossary</span>
                         </button>
                         <button
                             onClick={() => fileInputRef.current?.click()}
@@ -112,53 +143,78 @@ export const TranslatorHMF = () => {
                             <ImageIcon size={16} />
                             <span>Image</span>
                         </button>
-                        <button
-                            onClick={() => cameraInputRef.current?.click()}
-                            className="p-2 rounded-lg flex flex-col items-center gap-1 text-[10px] transition-all hover:bg-white/5 text-gray-400"
-                        >
-                            <Camera size={16} />
-                            <span>Camera</span>
-                        </button>
                     </div>
 
                     {/* Content */}
-                    <div className="p-4 flex flex-col gap-4">
+                    <div className="p-4 flex flex-col gap-4 max-h-[400px] overflow-y-auto">
                         {/* Hidden Inputs */}
                         <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" className="hidden" />
                         <input type="file" ref={cameraInputRef} onChange={handleImageUpload} accept="image/*" capture="environment" className="hidden" />
 
                         <textarea
                             value={inputText}
-                            onChange={(e) => setInputText(e.target.value)}
-                            placeholder="Enter Arabic or English text..."
-                            className={`w-full h-24 p-3 rounded-xl resize-none text-sm focus:outline-none focus:ring-1 focus:ring-cyan-500/50 transition-all ${styles.input}`}
+                            onChange={(e) => {
+                                setInputText(e.target.value);
+                                if (mode === 'glossary') handleGlossarySearch();
+                            }}
+                            placeholder={mode === 'glossary' ? "Search cybersecurity terms..." : "Enter Arabic or English text..."}
+                            className={`w-full h-20 p-3 rounded-xl resize-none text-sm focus:outline-none focus:ring-1 focus:ring-cyan-500/50 transition-all ${styles.input}`}
                             dir="auto"
                         />
 
-                        <button
-                            onClick={handleTranslate}
-                            disabled={isTranslating}
-                            className={`w-full py-2.5 rounded-xl font-bold text-sm shadow-lg flex items-center justify-center gap-2 transition-all ${isTranslating
-                                ? 'bg-gray-500/50 cursor-not-allowed'
-                                : 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white transform hover:scale-[1.02]'
-                                }`}
-                        >
-                            {isTranslating ? <Loader2 size={16} className="animate-spin" /> : <Languages size={16} />}
-                            {isTranslating ? 'Translating...' : 'Translate Now'}
-                        </button>
+                        {mode === 'text' && (
+                            <button
+                                onClick={handleTranslate}
+                                disabled={isTranslating}
+                                className={`w-full py-2.5 rounded-xl font-bold text-sm shadow-lg flex items-center justify-center gap-2 transition-all ${isTranslating
+                                    ? 'bg-gray-500/50 cursor-not-allowed'
+                                    : 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white transform hover:scale-[1.02]'
+                                    }`}
+                            >
+                                {isTranslating ? <Loader2 size={16} className="animate-spin" /> : <Languages size={16} />}
+                                {isTranslating ? 'Translating...' : 'Translate Now'}
+                            </button>
+                        )}
 
-                        {/* Result Area */}
-                        {(translatedText || isTranslating) && (
-                            <div className={`p-3 rounded-xl border border-white/5 text-sm min-h-[80px] ${isDark ? 'bg-white/5' : 'bg-gray-100'}`}>
-                                <p className="text-[10px] text-gray-500 mb-1 uppercase tracking-wider">Result</p>
+                        {/* Glossary Results */}
+                        {glossaryResults.length > 0 && (
+                            <div className="space-y-2">
+                                <p className="text-[10px] text-cyan-400 uppercase tracking-wider flex items-center gap-1">
+                                    <BookOpen size={12} /> Cybersecurity Terms Found
+                                </p>
+                                {glossaryResults.map((term, idx) => (
+                                    <div key={idx} className={`p-3 rounded-lg border ${isDark ? 'bg-cyan-950/30 border-cyan-500/20' : 'bg-cyan-50 border-cyan-200'}`}>
+                                        <div className="flex justify-between items-start gap-2 mb-1">
+                                            <span className={`font-bold text-sm ${styles.textMain}`}>{term.en}</span>
+                                            <span className="text-cyan-400 text-sm font-arabic">{term.ar}</span>
+                                        </div>
+                                        <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{term.def}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Translation Result */}
+                        {(translatedText || isTranslating) && mode === 'text' && (
+                            <div className={`p-3 rounded-xl border border-white/5 text-sm min-h-[60px] ${isDark ? 'bg-white/5' : 'bg-gray-100'}`}>
+                                <p className="text-[10px] text-gray-500 mb-1 uppercase tracking-wider">Translation</p>
                                 {isTranslating ? (
                                     <div className="space-y-2 animate-pulse">
                                         <div className="h-2 bg-gray-500/20 rounded w-3/4"></div>
                                         <div className="h-2 bg-gray-500/20 rounded w-1/2"></div>
                                     </div>
                                 ) : (
-                                    <p className={`whitespace-pre-wrap ${styles.textMain} leading-relaxed font-medium`}>{translatedText}</p>
+                                    <p className={`whitespace-pre-wrap ${styles.textMain} leading-relaxed font-medium`} dir="auto">{translatedText}</p>
                                 )}
+                            </div>
+                        )}
+
+                        {/* Empty state for glossary */}
+                        {mode === 'glossary' && glossaryResults.length === 0 && inputText.trim() && (
+                            <div className={`p-4 text-center rounded-lg ${isDark ? 'bg-white/5' : 'bg-gray-100'}`}>
+                                <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                                    لم يتم العثور على مصطلحات مطابقة
+                                </p>
                             </div>
                         )}
                     </div>
