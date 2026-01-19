@@ -169,9 +169,10 @@ export const dbService = {
                 await setDoc(doc(db, 'settings', 'global'), {
                     forcedTheme: 'none',
                     showTranslator: true,
-                    showVoiceAI: true
+                    showVoiceAI: true,
+                    showChatNote: true
                 });
-                return { forcedTheme: 'none', showTranslator: true, showVoiceAI: true };
+                return { forcedTheme: 'none', showTranslator: true, showVoiceAI: true, showChatNote: true };
             }
 
             // We know 'global' is the ID we use
@@ -180,11 +181,11 @@ export const dbService = {
 
             if (settings) return settings.data();
 
-            return { forcedTheme: 'none', showTranslator: true, showVoiceAI: true };
+            return { forcedTheme: 'none', showTranslator: true, showVoiceAI: true, showChatNote: true };
         } catch (error) {
             console.error("Error fetching settings:", error);
             // Return defaults on error to not break app
-            return { forcedTheme: 'none', showTranslator: true, showVoiceAI: true };
+            return { forcedTheme: 'none', showTranslator: true, showVoiceAI: true, showChatNote: true };
         }
     },
 

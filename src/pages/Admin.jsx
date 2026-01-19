@@ -17,7 +17,7 @@ import { dbService as dbServiceImport } from '../services/db'; // Import dbServi
 export const Admin = () => {
     const { user } = useAuth();
     const [representatives, setRepresentatives] = useState([]);
-    const [settings, setSettings] = useState({ forcedTheme: 'none', showTranslator: true, showVoiceAI: true });
+    const [settings, setSettings] = useState({ forcedTheme: 'none', showTranslator: true, showVoiceAI: true, showChatNote: true });
     const [loading, setLoading] = useState(true);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -259,6 +259,22 @@ export const Admin = () => {
                                         className="sr-only peer"
                                         checked={settings.showVoiceAI}
                                         onChange={(e) => handleUpdateSettings({ showVoiceAI: e.target.checked })}
+                                    />
+                                    <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-cyber rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyber"></div>
+                                </label>
+                            </div>
+
+                            <div className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-white/10">
+                                <div>
+                                    <p className="text-white font-bold">المساعد الذكي (ChatNote)</p>
+                                    <p className="text-xs text-gray-500">نافذة المحادثة الذكية</p>
+                                </div>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        className="sr-only peer"
+                                        checked={settings.showChatNote}
+                                        onChange={(e) => handleUpdateSettings({ showChatNote: e.target.checked })}
                                     />
                                     <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-cyber rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyber"></div>
                                 </label>

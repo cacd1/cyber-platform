@@ -73,7 +73,7 @@ export const Layout = ({ children }) => {
             {/* Chat Note Feature - Conditioned on Settings */}
             {settings?.showVoiceAI && <VoiceToTextHMF />}
             {settings?.showTranslator && <TranslatorHMF />}
-            <ChatNote />
+            {settings?.showChatNote && <ChatNote />}
 
             {/* Login Modal */}
             <Modal

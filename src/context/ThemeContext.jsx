@@ -10,7 +10,7 @@ export const ThemeProvider = ({ children }) => {
     });
 
     // Global settings from DB
-    const [settings, setSettings] = useState({ forcedTheme: 'none', showTranslator: true, showVoiceAI: true });
+    const [settings, setSettings] = useState({ forcedTheme: 'none', showTranslator: true, showVoiceAI: true, showChatNote: true });
 
     // 1. Fetch settings on mount (and periodically/realtime if needed)
     useEffect(() => {
