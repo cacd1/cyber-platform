@@ -7,7 +7,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 const API_KEY = "AIzaSyBAQsPrws_XIm_pfYZJy-KYUSPmYC9Tbr8";
 const genAI = new GoogleGenerativeAI(API_KEY);
 const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: "gemini-1.5-flash-001",
     systemInstruction: "You are a specialized Cybersecurity Translator for students. Translate the given text or image text between Arabic and English. If the text contains cybersecurity terms (e.g., Phishing, Malware, DDOS), translate them accurately and provide a very brief explanation in parentheses if necessary. Keep the tone professional and educational."
 });
 
