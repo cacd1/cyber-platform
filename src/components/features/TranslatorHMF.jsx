@@ -1,22 +1,13 @@
 import React, { useState, useRef } from 'react';
-import { Languages, X, Camera, Image as ImageIcon, Send, ArrowRightLeft, ScanText, Loader2 } from 'lucide-react';
+import { Languages, X, Camera, Image as ImageIcon, ArrowRightLeft, ScanText, Loader2 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-// Initialize Gemini
-// Initialize Gemini
-const API_KEY = "AIzaSyA9JtziaDJhVxqnA9BmYsKqyb9zZVMS-Is";
-const genAI = new GoogleGenerativeAI(API_KEY);
-
-const MODELS_TO_TRY = ["gemini-2.0-flash", "gemini-1.0-pro", "gemini-pro-vision"];
 
 export const TranslatorHMF = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [inputText, setInputText] = useState('');
     const [translatedText, setTranslatedText] = useState('');
     const [isTranslating, setIsTranslating] = useState(false);
-    const [selectedImage, setSelectedImage] = useState(null);
-    const [mode, setMode] = useState('text'); // text, image
+    const [mode, setMode] = useState('text');
     const fileInputRef = useRef(null);
     const cameraInputRef = useRef(null);
     const { theme } = useTheme();
@@ -25,63 +16,32 @@ export const TranslatorHMF = () => {
 
     const toggleOpen = () => setIsOpen(!isOpen);
 
+    // Detect if text is Arabic
+    const isArabic = (text) => /[\u0600-\u06FF]/.test(text);
+
     const handleTranslate = async () => {
-        if (!inputText.trim() && !selectedImage) return;
+        if (!inputText.trim()) return;
 
         setIsTranslating(true);
         setTranslatedText('');
 
         try {
-            let prompt = inputText;
-            let imagePart = null;
+            // Detect language direction
+            const sourceLang = isArabic(inputText) ? 'ar' : 'en';
+            const targetLang = sourceLang === 'ar' ? 'en' : 'ar';
 
-            if (selectedImage) {
-                // Remove data URL prefix for Gemini
-                const base64Data = selectedImage.split(',')[1];
-                imagePart = {
-                    inlineData: {
-                        data: base64Data,
-                        mimeType: "image/jpeg",
-                    },
-                };
+            // Use MyMemory Translation API (Free, no key required)
+            const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(inputText)}&langpair=${sourceLang}|${targetLang}`;
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.responseStatus === 200 && data.responseData) {
+                setTranslatedText(data.responseData.translatedText);
+            } else {
+                throw new Error(data.responseDetails || "Translation failed");
             }
-
-            let result = null;
-            let lastError = null;
-
-            // Try models in order
-            for (const modelName of MODELS_TO_TRY) {
-                try {
-                    // Config for this attempt
-                    const modelConfig = { model: modelName };
-                    if (modelName.includes("1.5")) {
-                        modelConfig.systemInstruction = "You are a specialized Cybersecurity Translator for students. Translate the given text or image text between Arabic and English. If the text contains cybersecurity terms (e.g., Phishing, Malware, DDOS), translate them accurately and provide a very brief explanation in parentheses if necessary. Keep the tone professional and educational.";
-                    }
-
-                    const model = genAI.getGenerativeModel(modelConfig);
-
-                    if (imagePart) {
-                        result = await model.generateContent([prompt || "Translate this image content to Arabic/English", imagePart]);
-                    } else {
-                        result = await model.generateContent(prompt);
-                    }
-
-                    if (result && result.response) {
-                        break; // Success!
-                    }
-                } catch (e) {
-                    lastError = e;
-                    continue; // Try next
-                }
-            }
-
-            if (!result) throw lastError || new Error("All models failed");
-
-            const response = await result.response;
-            setTranslatedText(response.text());
         } catch (error) {
-            console.error("Translation Error:", error);
-            setTranslatedText("Error details: " + (error.toString()));
+            setTranslatedText("خطأ في الترجمة: " + error.message);
         } finally {
             setIsTranslating(false);
         }
@@ -90,13 +50,8 @@ export const TranslatorHMF = () => {
     const handleImageUpload = (e) => {
         const file = e.target.files[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setSelectedImage(reader.result);
-                setMode('image');
-                setTranslatedText(''); // clear previous
-            };
-            reader.readAsDataURL(file);
+            setTranslatedText("ترجمة الصور غير متوفرة حالياً. يرجى كتابة النص يدوياً.");
+            setMode('text');
         }
         e.target.value = '';
     };
@@ -144,7 +99,7 @@ export const TranslatorHMF = () => {
                     {/* Controls */}
                     <div className="p-2 grid grid-cols-3 gap-2 border-b border-white/5">
                         <button
-                            onClick={() => { setMode('text'); setSelectedImage(null); setTranslatedText(''); }}
+                            onClick={() => { setMode('text'); setTranslatedText(''); }}
                             className={`p-2 rounded-lg flex flex-col items-center gap-1 text-[10px] transition-all ${mode === 'text' ? 'bg-cyan-500/20 text-cyan-400' : 'hover:bg-white/5 text-gray-400'}`}
                         >
                             <ScanText size={16} />
@@ -152,7 +107,7 @@ export const TranslatorHMF = () => {
                         </button>
                         <button
                             onClick={() => fileInputRef.current?.click()}
-                            className={`p-2 rounded-lg flex flex-col items-center gap-1 text-[10px] transition-all ${mode === 'image' && !selectedImage ? 'bg-cyan-500/20 text-cyan-400' : 'hover:bg-white/5 text-gray-400'}`}
+                            className="p-2 rounded-lg flex flex-col items-center gap-1 text-[10px] transition-all hover:bg-white/5 text-gray-400"
                         >
                             <ImageIcon size={16} />
                             <span>Image</span>
@@ -172,27 +127,13 @@ export const TranslatorHMF = () => {
                         <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" className="hidden" />
                         <input type="file" ref={cameraInputRef} onChange={handleImageUpload} accept="image/*" capture="environment" className="hidden" />
 
-                        {mode === 'image' && selectedImage && (
-                            <div className="relative rounded-lg overflow-hidden border border-white/10 max-h-40 bg-black/50">
-                                <img src={selectedImage} alt="To translate" className="w-full h-full object-contain" />
-                                <button
-                                    onClick={() => setSelectedImage(null)}
-                                    className="absolute top-2 right-2 p-1 bg-black/60 text-white rounded-full hover:bg-red-500/80 transition-colors"
-                                >
-                                    <X size={14} />
-                                </button>
-                            </div>
-                        )}
-
-                        {mode === 'text' && (
-                            <textarea
-                                value={inputText}
-                                onChange={(e) => setInputText(e.target.value)}
-                                placeholder="Enter Arabic or English text..."
-                                className={`w-full h-24 p-3 rounded-xl resize-none text-sm focus:outline-none focus:ring-1 focus:ring-cyan-500/50 transition-all ${styles.input}`}
-                                dir="auto"
-                            />
-                        )}
+                        <textarea
+                            value={inputText}
+                            onChange={(e) => setInputText(e.target.value)}
+                            placeholder="Enter Arabic or English text..."
+                            className={`w-full h-24 p-3 rounded-xl resize-none text-sm focus:outline-none focus:ring-1 focus:ring-cyan-500/50 transition-all ${styles.input}`}
+                            dir="auto"
+                        />
 
                         <button
                             onClick={handleTranslate}
