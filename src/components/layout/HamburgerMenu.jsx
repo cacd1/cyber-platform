@@ -20,7 +20,6 @@ export const HamburgerMenu = ({ onLoginClick }) => {
     const handleLogoutCode = () => {
         exitCode();
         setIsOpen(false);
-        window.location.reload(); // Quick way to reset view
     };
 
     const handleSwitchCode = () => {
