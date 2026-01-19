@@ -9,6 +9,7 @@ import { useAuth } from '../../context/AuthContext';
 import { ChatNote } from '../features/ChatNote';
 import { TranslatorHMF } from '../features/TranslatorHMF';
 import { VoiceToTextHMF } from '../features/VoiceToTextHMF';
+import { GlobalAlert } from '../features/GlobalAlert';
 
 export const Layout = ({ children }) => {
     const { theme, settings } = useTheme();
@@ -62,6 +63,7 @@ export const Layout = ({ children }) => {
             </div>
 
             {/* Navigation */}
+            <GlobalAlert />
             <BackButton />
             <HamburgerMenu onLoginClick={() => setIsLoginModalOpen(true)} />
 

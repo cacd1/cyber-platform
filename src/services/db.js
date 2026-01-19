@@ -170,9 +170,11 @@ export const dbService = {
                     forcedTheme: 'none',
                     showTranslator: true,
                     showVoiceAI: true,
-                    showChatNote: true
+                    showChatNote: true,
+                    alertMessage: '',
+                    showAlert: false
                 });
-                return { forcedTheme: 'none', showTranslator: true, showVoiceAI: true, showChatNote: true };
+                return { forcedTheme: 'none', showTranslator: true, showVoiceAI: true, showChatNote: true, alertMessage: '', showAlert: false };
             }
 
             // We know 'global' is the ID we use
@@ -181,11 +183,11 @@ export const dbService = {
 
             if (settings) return settings.data();
 
-            return { forcedTheme: 'none', showTranslator: true, showVoiceAI: true, showChatNote: true };
+            return { forcedTheme: 'none', showTranslator: true, showVoiceAI: true, showChatNote: true, alertMessage: '', showAlert: false };
         } catch (error) {
             console.error("Error fetching settings:", error);
             // Return defaults on error to not break app
-            return { forcedTheme: 'none', showTranslator: true, showVoiceAI: true, showChatNote: true };
+            return { forcedTheme: 'none', showTranslator: true, showVoiceAI: true, showChatNote: true, alertMessage: '', showAlert: false };
         }
     },
 

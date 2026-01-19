@@ -282,6 +282,38 @@ export const Admin = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* Global Alert Settings */}
+                <div className="p-6 border-t border-violet-500/20 bg-violet-500/5">
+                    <h3 className="text-gray-400 mb-4 font-bold flex items-center gap-2">
+                        <AlertTriangle size={18} className="text-yellow-500" /> التنبيه العام
+                    </h3>
+                    <div className="flex flex-col gap-4">
+                        <div className="flex items-center gap-4">
+                            <Input
+                                placeholder="اكتب نص التنبيه هنا..."
+                                value={settings.alertMessage || ''}
+                                onChange={(e) => handleUpdateSettings({ alertMessage: e.target.value })}
+                                className="flex-1"
+                            />
+                            <div className="flex items-center gap-2 bg-white/5 p-2 rounded-lg border border-white/10">
+                                <span className="text-sm text-gray-400">تفعيل</span>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        className="sr-only peer"
+                                        checked={settings.showAlert || false}
+                                        onChange={(e) => handleUpdateSettings({ showAlert: e.target.checked })}
+                                    />
+                                    <div className="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-yellow-500"></div>
+                                </label>
+                            </div>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                            * هذا التنبيه سيظهر في أعلى الشاشة لجميع المستخدمين (شريط أصفر).
+                        </p>
+                    </div>
+                </div>
             </Card>
 
             {/* Add Button */}

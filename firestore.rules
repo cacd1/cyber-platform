@@ -30,7 +30,12 @@ service cloud.firestore {
     
     match /representatives/{repId} {
       allow read: if true;
-      allow write: if isAuthenticated() && request.auth.uid == repId;
+      allow write: if isAuthenticated();
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
     }
 
     match /{document=**} {
