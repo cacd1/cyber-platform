@@ -94,7 +94,7 @@ export const Landing = () => {
                 variants={container}
                 initial="hidden"
                 animate="show"
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-7xl px-4"
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-7xl px-4 relative z-20"
             >
                 {stages.map((stage) => (
                     <motion.div key={stage.id} variants={item} className="h-full">
