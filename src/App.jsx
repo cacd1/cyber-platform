@@ -19,8 +19,8 @@ function App() {
           <Layout>
             <Routes>
               <Route path="/" element={<Landing />} />
-              <Route path="/home" element={<Home />} />
               <Route element={<ProtectedRoute />}>
+                <Route path="/home" element={<Home />} />
                 <Route path="/course1" element={<SubjectList />} />
                 <Route path="/course1/:subjectId" element={<LectureList />} />
               </Route>
