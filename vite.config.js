@@ -44,6 +44,18 @@ export default defineConfig({
     })
   ],
   base: './',
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/app-check'],
+          ui: ['framer-motion', 'lucide-react']
+        }
+      }
+    }
+  },
   esbuild: {
     drop: ['console', 'debugger'],
   },

@@ -9,6 +9,7 @@ export const SUBJECTS = [
     { id: 'arabic', name: 'اللغة العربية', nameEn: 'Arabic Language' }
 ];
 
-// Admin email for dashboard access
-export const ADMIN_EMAIL = 'nb2@admin.com';
+// Admin email from environment variable (not hardcoded for security)
+export const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || '';
+
 

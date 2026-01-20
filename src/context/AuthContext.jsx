@@ -5,32 +5,64 @@ import { collection, query, where, getDocs, doc, getDoc, updateDoc } from 'fireb
 
 const AuthContext = createContext();
 
+// Secure storage helpers - use sessionStorage for sensitive data
+const secureStorage = {
+    get: (key) => {
+        try {
+            return sessionStorage.getItem(key) || null;
+        } catch {
+            return null;
+        }
+    },
+    set: (key, value) => {
+        try {
+            sessionStorage.setItem(key, value);
+        } catch {
+            // Silent fail for storage errors
+        }
+    },
+    remove: (key) => {
+        try {
+            sessionStorage.removeItem(key);
+        } catch {
+            // Silent fail
+        }
+    }
+};
+
+// Rate limiting with backup in memory (harder to bypass)
+const rateLimitCache = new Map();
+
 export const AuthProvider = ({ children }) => {
     // Representative Session
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Student Access Code Session
+    // Student Access Code Session - use sessionStorage for security
     const [accessCode, setAccessCode] = useState(() => {
-        return localStorage.getItem('accessCode') || null;
+        return secureStorage.get('accessCode');
     });
 
     // Derived state: Active Representative ID (from login OR code)
     const [activeRepId, setActiveRepId] = useState(() => {
-        return localStorage.getItem('activeRepId') || null;
+        return secureStorage.get('activeRepId');
     });
 
     // Monitor Auth State
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             if (currentUser) {
-                // Fetch extra profile data
-                const docRef = doc(db, 'representatives', currentUser.uid);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    setUser({ uid: currentUser.uid, ...docSnap.data() });
-                } else {
-                    setUser(currentUser); // Should ideally have profile
+                try {
+                    // Fetch extra profile data - only authenticated users can read their own data
+                    const docRef = doc(db, 'representatives', currentUser.uid);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        setUser({ uid: currentUser.uid, ...docSnap.data() });
+                    } else {
+                        setUser({ uid: currentUser.uid, email: currentUser.email });
+                    }
+                } catch {
+                    setUser({ uid: currentUser.uid, email: currentUser.email });
                 }
             } else {
                 setUser(null);
@@ -43,15 +75,15 @@ export const AuthProvider = ({ children }) => {
     // Heartbeat: Update lastSeen every 4 minutes if user is logged in
     useEffect(() => {
         let interval;
-        if (user) {
+        if (user?.uid) {
             const updateHeartbeat = async () => {
                 try {
                     const repRef = doc(db, 'representatives', user.uid);
                     await updateDoc(repRef, {
                         lastSeen: new Date().toISOString()
                     });
-                } catch (e) {
-                    console.error("Heartbeat error:", e);
+                } catch {
+                    // Silent fail for heartbeat
                 }
             };
 
@@ -65,30 +97,42 @@ export const AuthProvider = ({ children }) => {
     }, [user]);
 
     useEffect(() => {
-        if (user) {
+        if (user?.uid) {
             setActiveRepId(user.uid);
-            localStorage.setItem('activeRepId', user.uid);
+            secureStorage.set('activeRepId', user.uid);
         }
     }, [user]);
 
-    // Handle Active Rep ID when using Access Code (Only fetch if not already set or mismatch)
+    // Handle Active Rep ID when using Access Code
     useEffect(() => {
         const fetchRepByCode = async () => {
             if (accessCode && !user) {
                 try {
-                    const q = query(collection(db, 'representatives'), where('accessCode', '==', accessCode));
+                    // Use the secure accessCodes collection
+                    const q = query(collection(db, 'accessCodes'), where('code', '==', accessCode));
                     const querySnapshot = await getDocs(q);
                     if (!querySnapshot.empty) {
-                        const id = querySnapshot.docs[0].id;
-                        setActiveRepId(id);
-                        localStorage.setItem('activeRepId', id);
+                        const codeData = querySnapshot.docs[0].data();
+                        setActiveRepId(codeData.repId);
+                        secureStorage.set('activeRepId', codeData.repId);
                     }
-                } catch (e) {
-                    // Silent fail for code resolution
+                } catch {
+                    // Fallback to representatives collection for backward compatibility
+                    try {
+                        const q = query(collection(db, 'representatives'), where('accessCode', '==', accessCode));
+                        const querySnapshot = await getDocs(q);
+                        if (!querySnapshot.empty) {
+                            const id = querySnapshot.docs[0].id;
+                            setActiveRepId(id);
+                            secureStorage.set('activeRepId', id);
+                        }
+                    } catch {
+                        // Silent fail
+                    }
                 }
             } else if (!user && !accessCode) {
                 setActiveRepId(null);
-                localStorage.removeItem('activeRepId');
+                secureStorage.remove('activeRepId');
             }
         };
         // Only run if we don't have an ID yet but have a code
@@ -97,26 +141,41 @@ export const AuthProvider = ({ children }) => {
         }
     }, [accessCode, user, activeRepId]);
 
-
-    // Rate Limit Helper
+    // Improved Rate Limit Helper with in-memory backup
     const checkRateLimit = (key, maxAttempts, cooldownMinutes) => {
-        const data = JSON.parse(localStorage.getItem(key) || '{"attempts": 0, "lockoutTime": null}');
         const now = Date.now();
 
-        if (data.lockoutTime) {
-            if (now < data.lockoutTime) {
-                const remaining = Math.ceil((data.lockoutTime - now) / 60000);
-                return {
-                    allowed: false,
-                    error: `Too many attempts. Please wait ${remaining} minutes.`
-                };
-            } else {
-                // Lockout expired
-                data.attempts = 0;
-                data.lockoutTime = null;
-                localStorage.setItem(key, JSON.stringify(data));
-            }
+        // Check in-memory cache first (harder to bypass)
+        const memoryData = rateLimitCache.get(key) || { attempts: 0, lockoutTime: null };
+
+        // Also check sessionStorage as backup
+        let storageData;
+        try {
+            storageData = JSON.parse(sessionStorage.getItem(key) || '{"attempts": 0, "lockoutTime": null}');
+        } catch {
+            storageData = { attempts: 0, lockoutTime: null };
         }
+
+        // Use the stricter of the two
+        const data = {
+            attempts: Math.max(memoryData.attempts, storageData.attempts),
+            lockoutTime: Math.max(memoryData.lockoutTime || 0, storageData.lockoutTime || 0) || null
+        };
+
+        if (data.lockoutTime && now < data.lockoutTime) {
+            const remaining = Math.ceil((data.lockoutTime - now) / 60000);
+            return {
+                allowed: false,
+                error: `محاولات كثيرة جداً. يرجى الانتظار ${remaining} دقيقة.`
+            };
+        } else if (data.lockoutTime && now >= data.lockoutTime) {
+            // Lockout expired - reset
+            data.attempts = 0;
+            data.lockoutTime = null;
+            rateLimitCache.set(key, data);
+            try { sessionStorage.setItem(key, JSON.stringify(data)); } catch { }
+        }
+
         return { allowed: true, data };
     };
 
@@ -125,70 +184,101 @@ export const AuthProvider = ({ children }) => {
         if (data.attempts >= maxAttempts) {
             data.lockoutTime = Date.now() + cooldownMinutes * 60 * 1000;
         }
-        localStorage.setItem(key, JSON.stringify(data));
+        // Save to both memory and storage
+        rateLimitCache.set(key, { ...data });
+        try { sessionStorage.setItem(key, JSON.stringify(data)); } catch { }
     };
 
     const login = async (email, password) => {
+        // Sanitize email input
+        const sanitizedEmail = (email || '').trim().toLowerCase().slice(0, 100);
+
         const rateLimit = checkRateLimit('rep_login_attempts', 4, 15);
         if (!rateLimit.allowed) return { success: false, error: rateLimit.error };
 
         try {
-            await signInWithEmailAndPassword(auth, email, password);
-            localStorage.removeItem('rep_login_attempts');
+            await signInWithEmailAndPassword(auth, sanitizedEmail, password);
+            rateLimitCache.delete('rep_login_attempts');
+            try { sessionStorage.removeItem('rep_login_attempts'); } catch { }
             return { success: true };
-        } catch (error) {
-            console.error("Login Check:", error);
+        } catch {
             recordAttempt('rep_login_attempts', rateLimit.data, 4, 15);
-            return { success: false, error: 'Invalid credentials' };
+            return { success: false, error: 'بيانات الدخول غير صحيحة' };
         }
     };
 
     const logout = async () => {
         await signOut(auth);
         setUser(null);
-        localStorage.removeItem('activeRepId');
+        secureStorage.remove('activeRepId');
+        secureStorage.remove('accessCode');
         setActiveRepId(null);
+        setAccessCode(null);
     };
 
     const enterCode = async (code) => {
+        // Sanitize code input - only allow alphanumeric, max 9 chars
+        const sanitizedCode = (code || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 9);
+
+        if (sanitizedCode.length !== 9) {
+            return { success: false, error: 'الكود يجب أن يكون 9 خانات' };
+        }
+
         const rateLimit = checkRateLimit('student_code_attempts', 4, 10);
         if (!rateLimit.allowed) return { success: false, error: rateLimit.error };
 
         try {
-            const q = query(collection(db, 'representatives'), where('accessCode', '==', code));
-            const querySnapshot = await getDocs(q);
+            // First try the secure accessCodes collection
+            let repId = null;
+            let repName = null;
 
-            if (!querySnapshot.empty) {
-                const repData = querySnapshot.docs[0].data();
-                const repId = querySnapshot.docs[0].id; // Get ID directly
+            const codeQuery = query(collection(db, 'accessCodes'), where('code', '==', sanitizedCode));
+            const codeSnapshot = await getDocs(codeQuery);
 
-                setAccessCode(code);
-                localStorage.setItem('accessCode', code);
+            if (!codeSnapshot.empty) {
+                const codeData = codeSnapshot.docs[0].data();
+                repId = codeData.repId;
+                repName = codeData.repName || 'ممثل';
+            } else {
+                // Fallback: try representatives collection (for backward compatibility)
+                const repQuery = query(collection(db, 'representatives'), where('accessCode', '==', sanitizedCode));
+                const repSnapshot = await getDocs(repQuery);
 
-                setActiveRepId(repId); // Update State
-                localStorage.setItem('activeRepId', repId); // Persist immediately
-
-                localStorage.removeItem('student_code_attempts');
-                return { success: true, repName: repData.name };
+                if (!repSnapshot.empty) {
+                    const repData = repSnapshot.docs[0].data();
+                    repId = repSnapshot.docs[0].id;
+                    repName = repData.name;
+                }
             }
-        } catch (e) {
-            console.error("Enter Code Error:", e);
-            return { success: false, error: "System Error: " + e.message };
+
+            if (repId) {
+                setAccessCode(sanitizedCode);
+                secureStorage.set('accessCode', sanitizedCode);
+                setActiveRepId(repId);
+                secureStorage.set('activeRepId', repId);
+
+                rateLimitCache.delete('student_code_attempts');
+                try { sessionStorage.removeItem('student_code_attempts'); } catch { }
+                return { success: true, repName };
+            }
+        } catch {
+            return { success: false, error: 'خطأ في النظام. يرجى المحاولة لاحقاً.' };
         }
 
         recordAttempt('student_code_attempts', rateLimit.data, 4, 10);
 
         if (rateLimit.data.attempts === 2) {
-            return { success: false, error: 'Incorrect code. Please check with your representative.' };
+            return { success: false, error: 'كود غير صحيح. تأكد من الكود مع ممثل شعبتك.' };
         }
 
-        return { success: false, error: 'Invalid access code' };
+        return { success: false, error: 'كود الوصول غير صالح' };
     };
 
     const exitCode = () => {
         setAccessCode(null);
-        localStorage.removeItem('accessCode');
+        secureStorage.remove('accessCode');
         setActiveRepId(null);
+        secureStorage.remove('activeRepId');
     };
 
     return (
@@ -210,3 +300,4 @@ export const AuthProvider = ({ children }) => {
 };
 
 export const useAuth = () => useContext(AuthContext);
+

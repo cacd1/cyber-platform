@@ -14,6 +14,18 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { dbService as dbServiceImport } from '../services/db';
 
+// Sanitize text input for security
+const sanitizeInput = (text, maxLength = 100) => {
+    if (!text || typeof text !== 'string') return '';
+    return text
+        .trim()
+        .slice(0, maxLength)
+        .replace(/<[^>]*>/g, '')
+        .replace(/[<>"'`]/g, '');
+};
+
+const MAX_ALERT_LENGTH = 500;
+
 export const Admin = () => {
     const { user } = useAuth();
     const [representatives, setRepresentatives] = useState([]);
@@ -61,8 +73,7 @@ export const Admin = () => {
 
             setRepresentatives(repsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
             setSettings(settingsData);
-        } catch (err) {
-            console.error('Error fetching data:', err);
+        } catch {
             setError('فشل في تحميل البيانات');
         } finally {
             setLoading(false);
@@ -71,15 +82,18 @@ export const Admin = () => {
 
     const handleUpdateSettings = async (updates) => {
         try {
+            // Sanitize alert message if present
+            if (updates.alertMessage !== undefined) {
+                updates.alertMessage = sanitizeInput(updates.alertMessage, MAX_ALERT_LENGTH);
+            }
             const newSettings = { ...settings, ...updates };
-            setSettings(newSettings); // Optimistic UI update
+            setSettings(newSettings);
             await dbServiceImport.updateSettings(newSettings);
             setSuccess('تم تحديث الإعدادات بنجاح');
             setTimeout(() => setSuccess(''), 2000);
-        } catch (err) {
-            console.error('Error updating settings:', err);
+        } catch {
             setError('فشل في حفظ الإعدادات');
-            fetchData(); // Revert on error
+            fetchData();
         }
     };
 
@@ -101,15 +115,25 @@ export const Admin = () => {
         }
 
         try {
+            // Sanitize inputs
+            const sanitizedName = sanitizeInput(newRep.name, 100);
+            const sanitizedEmail = newRep.email.trim().toLowerCase().slice(0, 100);
+            const sanitizedCode = newRep.code.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 9);
+
+            if (!sanitizedName || !sanitizedEmail || !sanitizedCode) {
+                setError('بيانات غير صالحة');
+                return;
+            }
+
             // Create Firebase Auth user
-            const userCredential = await createUserWithEmailAndPassword(auth, newRep.email, newRep.password);
+            const userCredential = await createUserWithEmailAndPassword(auth, sanitizedEmail, newRep.password);
 
             // Add to Firestore
             await addDoc(collection(db, 'representatives'), {
                 uid: userCredential.user.uid,
-                name: newRep.name,
-                email: newRep.email,
-                accessCode: newRep.code.toUpperCase(),
+                name: sanitizedName,
+                email: sanitizedEmail,
+                accessCode: sanitizedCode,
                 stage: newRep.stage,
                 createdAt: new Date().toISOString()
             });
@@ -119,13 +143,12 @@ export const Admin = () => {
             fetchData();
             setTimeout(() => setIsAddModalOpen(false), 1500);
         } catch (err) {
-            console.error('Error adding representative:', err);
             if (err.code === 'auth/email-already-in-use') {
                 setError('هذا الإيميل مستخدم مسبقاً');
             } else if (err.code === 'auth/weak-password') {
                 setError('كلمة السر ضعيفة (6 أحرف على الأقل)');
             } else {
-                setError('فشل في إضافة الممثل: ' + err.message);
+                setError('فشل في إضافة الممثل');
             }
         }
     };
@@ -140,8 +163,7 @@ export const Admin = () => {
             setIsDeleteModalOpen(false);
             setSelectedRep(null);
             fetchData();
-        } catch (err) {
-            console.error('Error deleting representative:', err);
+        } catch {
             setError('فشل في حذف الممثل');
         }
     };

@@ -25,6 +25,21 @@ const ALLOWED_TYPES = [
     'image/gif'
 ];
 
+// Security constants
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB max file size
+const MAX_NOTE_LENGTH = 2000; // Max characters for notes
+const MAX_NAME_LENGTH = 200; // Max characters for lecture names
+
+// Sanitize text input - remove potentially dangerous characters
+const sanitizeText = (text, maxLength = 1000) => {
+    if (!text || typeof text !== 'string') return '';
+    return text
+        .trim()
+        .slice(0, maxLength)
+        .replace(/<[^>]*>/g, '') // Remove HTML tags
+        .replace(/[<>"'`]/g, ''); // Remove potentially dangerous characters
+};
+
 export const LectureList = () => {
     const { subjectId } = useParams();
     const { hasAccessCode, activeRepId, user } = useAuth();
@@ -97,21 +112,26 @@ export const LectureList = () => {
     const handleAddLecture = async (e) => {
         e.preventDefault();
         if (!canEdit) return;
-        if (!newLectureName.trim()) return;
+
+        // Sanitize lecture name
+        const sanitizedName = sanitizeText(newLectureName, MAX_NAME_LENGTH);
+        if (!sanitizedName) {
+            alert('يرجى إدخال اسم صالح للمحاضرة');
+            return;
+        }
 
         try {
             const newLec = await dbService.addLecture({
                 subjectId,
                 createdBy: user.uid,
-                name: newLectureName,
+                name: sanitizedName,
                 content: { items: [] }
             });
 
             setLectures([...lectures, newLec]);
             setNewLectureName('');
             setIsAddModalOpen(false);
-        } catch (error) {
-            console.error("Failed to add lecture", error);
+        } catch {
             alert("حدث خطأ أثناء إضافة المحاضرة");
         }
     };
@@ -134,8 +154,15 @@ export const LectureList = () => {
         if (!lecture) return;
 
         const processFile = async (file) => {
+            // Validate file type
             if (!ALLOWED_TYPES.includes(file.type)) {
                 alert(`نوع الملف غير مدعوم: ${file.name}`);
+                return null;
+            }
+
+            // Validate file size
+            if (file.size > MAX_FILE_SIZE) {
+                alert(`حجم الملف كبير جداً (الحد الأقصى 10MB): ${file.name}`);
                 return null;
             }
 
@@ -222,7 +249,13 @@ export const LectureList = () => {
     const handleAddNote = async (lectureId) => {
         if (!canEdit) return;
         const text = noteInputs[lectureId];
-        if (!text || !text.trim()) return;
+
+        // Sanitize note text
+        const sanitizedText = sanitizeText(text, MAX_NOTE_LENGTH);
+        if (!sanitizedText) {
+            alert('يرجى إدخال نص صالح للملاحظة');
+            return;
+        }
 
         const lecture = lectures.find(l => l.id === lectureId);
         if (!lecture) return;
@@ -230,7 +263,7 @@ export const LectureList = () => {
         const newItem = {
             id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
             type: 'note',
-            text: text.trim(),
+            text: sanitizedText,
             addedAt: new Date().toISOString()
         };
 
@@ -244,8 +277,8 @@ export const LectureList = () => {
             await dbService.updateLecture(lectureId, { content: updatedContent });
             setLectures(lectures.map(l => l.id === lectureId ? { ...l, content: updatedContent } : l));
             setNoteInputs({ ...noteInputs, [lectureId]: '' });
-        } catch (error) {
-            console.error("Failed to add note", error);
+        } catch {
+            alert('حدث خطأ أثناء إضافة الملاحظة');
         }
     };
 
