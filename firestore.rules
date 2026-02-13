@@ -26,48 +26,43 @@ service cloud.firestore {
       return text is string && text.size() <= maxLength;
     }
 
-    // 1. Lectures: Anyone reads, Only Reps create/edit their own
+    // 1. Lectures: Authenticated reads only
     match /lectures/{lectureId} {
-      allow read: if true;
+      allow read: if isAuthenticated();
       allow create: if isOwnerOnCreate() 
         && request.resource.data.name is string 
         && request.resource.data.name.size() <= 200;
       allow update, delete: if isOwner(resource) || isAdmin();
     }
 
-    // 2. Announcements: Anyone reads, Only Reps create/edit their own
+    // 2. Announcements: Authenticated reads only
     match /announcements/{announcementId} {
-      allow read: if true;
+      allow read: if isAuthenticated();
       allow create: if isOwnerOnCreate()
         && request.resource.data.text is string
         && request.resource.data.text.size() <= 1000;
       allow update, delete: if isOwner(resource) || isAdmin();
     }
     
-    // 3. Representatives: SECURED - Only Admin can read full data
-    // Students can only verify if an accessCode exists (via query)
+    // 3. Representatives: SECURED
     match /representatives/{repId} {
-      // Only Admin can read representative data directly
-      // Or the representative themselves
-      allow read: if isAdmin() || (isAuthenticated() && request.auth.uid == repId);
-      
-      // ONLY Admin (nb2@admin.com) can add/delete representatives
+      allow get: if isAdmin() || (isAuthenticated() && request.auth.uid == repId);
+      allow list: if request.query.limit <= 1;
       allow create, delete: if isAdmin();
-      
-      // Admin can update anything, Rep can only update lastSeen
       allow update: if isAdmin() || (request.auth.uid == repId && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastSeen']));
     }
 
-    // 4. Access Code Verification Collection (new secure approach)
-    // This allows students to verify codes without exposing rep data
+    // 4. Access Code Verification: Public read with strict query limits
     match /accessCodes/{codeId} {
-      // Anyone can read to verify a code exists
-      allow read: if true;
-      // Only admin can manage codes
+      allow get: if true; 
+      allow list: if request.query.limit <= 1;
       allow write: if isAdmin();
     }
 
-    // 5. Settings: CRITICAL - Only Admin can change global settings
+    // 5. Settings: Public read (for global themes/alerts) or Auth only?
+    // Alerts need to be seen by everyone entering? 
+    // If they have code => they are auth. So Auth read is fine unless it's on Landing.
+    // Let's keep public read for settings as it contains non-sensitive theme/alert info.
     match /settings/{settingId} {
       allow read: if true;
       allow write: if isAdmin()

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+
 import { Lock, Unlock, BookOpen, Layers, ShieldCheck } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Modal } from '../components/ui/Modal';
@@ -10,7 +11,7 @@ import { useAuth } from '../context/AuthContext';
 
 export const Home = () => {
     const navigate = useNavigate();
-    const { enterCode, exitCode, hasAccessCode } = useAuth();
+    const { enterCode, hasAccessCode, exitCode } = useAuth();
     const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
     const [code, setCode] = useState('');
     const [error, setError] = useState('');
@@ -25,6 +26,14 @@ export const Home = () => {
 
     const handleSubmitCode = async (e) => {
         e.preventDefault();
+        setError('');
+
+        // Security: Prevent code switching
+        if (hasAccessCode) {
+            setError('أنت مسجل دخول بالفعل. يجب تسجيل الخروج أولاً.');
+            return;
+        }
+
         const result = await enterCode(code);
         if (result.success) {
             setIsCodeModalOpen(false);
@@ -130,6 +139,8 @@ export const Home = () => {
                     </Card>
                 </motion.div>
             </motion.div>
+
+
 
             {/* Access Code Modal */}
             <Modal

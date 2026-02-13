@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+
 import { Book, Code, Globe, Scale, Users, FileText, Hash, Bell } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { useAuth } from '../context/AuthContext';
@@ -46,7 +47,7 @@ export const SubjectList = () => {
             }
         };
         fetchCounts();
-    }, [effectiveRepId]);
+    }, [effectiveRepId, subjects]);
 
     // Allow access if student has code OR if representative is logged in
     const storedCode = localStorage.getItem('accessCode');

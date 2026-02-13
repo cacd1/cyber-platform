@@ -40,6 +40,17 @@ const sanitizeText = (text, maxLength = 1000) => {
         .replace(/[<>"'`]/g, ''); // Remove potentially dangerous characters
 };
 
+// Helper: Validate URL scheme to prevent XSS
+const isValidUrl = (url) => {
+    if (!url || typeof url !== 'string') return false;
+    try {
+        const parsed = new URL(url);
+        return ['http:', 'https:'].includes(parsed.protocol);
+    } catch {
+        return false;
+    }
+};
+
 export const LectureList = () => {
     const { subjectId } = useParams();
     const { hasAccessCode, activeRepId, user } = useAuth();
@@ -71,12 +82,19 @@ export const LectureList = () => {
         return latest;
     };
 
+    const [currentTime, setCurrentTime] = useState(() => Date.now());
+
+    useEffect(() => {
+        // Update time every minute to keep "NEW" badges fresh
+        const timer = setInterval(() => setCurrentTime(Date.now()), 60000);
+        return () => clearInterval(timer);
+    }, []);
+
     const hasNewContent = (lecture) => {
         const latestUpdate = getLatestUpdate(lecture);
-        const now = Date.now();
 
         // 1. Check if update is recent (< 4 hours)
-        const isRecent = (now - latestUpdate) < (4 * 60 * 60 * 1000);
+        const isRecent = (currentTime - latestUpdate) < (4 * 60 * 60 * 1000);
         if (!isRecent) return false;
 
         // 2. Check if user viewed it AFTER this update
@@ -86,11 +104,17 @@ export const LectureList = () => {
         return lastViewed < latestUpdate;
     };
 
-    const markAsViewed = (id) => {
-        const viewedMap = JSON.parse(localStorage.getItem('viewedLecturesMap') || '{}');
-        viewedMap[id] = Date.now();
-        localStorage.setItem('viewedLecturesMap', JSON.stringify(viewedMap));
-        setLectures([...lectures]); // Force re-render
+    const handleToggleLecture = (id) => {
+        if (expandedLecture === id) {
+            setExpandedLecture(null);
+        } else {
+            setExpandedLecture(id);
+            // Mark as viewed
+            const viewedMap = JSON.parse(localStorage.getItem('viewedLecturesMap') || '{}');
+            viewedMap[id] = Date.now();
+            localStorage.setItem('viewedLecturesMap', JSON.stringify(viewedMap));
+            setLectures(prev => [...prev]); // Force re-render
+        }
     };
 
     useEffect(() => {
@@ -101,6 +125,7 @@ export const LectureList = () => {
                     const data = await dbService.getLectures(subjectId, effectiveRepId);
                     setLectures(data.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)));
                 } catch (error) {
+                    console.error("Failed to fetch lectures", error);
                 }
             }
         };
@@ -131,7 +156,8 @@ export const LectureList = () => {
             setLectures([...lectures, newLec]);
             setNewLectureName('');
             setIsAddModalOpen(false);
-        } catch {
+        } catch (error) {
+            console.error("Failed to add lecture", error);
             alert("حدث خطأ أثناء إضافة المحاضرة");
         }
     };
@@ -277,7 +303,8 @@ export const LectureList = () => {
             await dbService.updateLecture(lectureId, { content: updatedContent });
             setLectures(lectures.map(l => l.id === lectureId ? { ...l, content: updatedContent } : l));
             setNoteInputs({ ...noteInputs, [lectureId]: '' });
-        } catch {
+        } catch (error) {
+            console.error("Failed to add note", error);
             alert('حدث خطأ أثناء إضافة الملاحظة');
         }
     };
@@ -353,7 +380,7 @@ export const LectureList = () => {
                         <Card key={lecture.id} className="p-0 overflow-hidden">
                             <div
                                 className="p-4 flex items-center justify-between bg-black/20 cursor-pointer hover:bg-black/30 transition-colors"
-                                onClick={() => setExpandedLecture(expandedLecture === lecture.id ? null : lecture.id)}
+                                onClick={() => handleToggleLecture(lecture.id)}
                             >
                                 <h3 className="text-lg font-bold text-white flex items-center gap-2">
                                     {lecture.name}
@@ -382,7 +409,6 @@ export const LectureList = () => {
                                         animate={{ height: 'auto' }}
                                         exit={{ height: 0 }}
                                         className="overflow-hidden bg-black/10"
-                                        onAnimationComplete={() => markAsViewed(lecture.id)} // Mark as viewed when expanded
                                     >
                                         <div className="p-4 border-t border-white/5">
                                             {lecture.content?.items && lecture.content.items.length > 0 ? (
@@ -417,15 +443,21 @@ export const LectureList = () => {
                                                                             </div>
                                                                         </div>
                                                                         <div className="flex items-center gap-3">
-                                                                            <a
-                                                                                href={item.url}
-                                                                                target="_blank"
-                                                                                rel="noopener noreferrer"
-                                                                                className="p-3 bg-cyber/20 hover:bg-cyber/30 text-cyber rounded-xl transition-colors"
-                                                                                title="فتح الملف"
-                                                                            >
-                                                                                <FileText size={20} />
-                                                                            </a>
+                                                                            {isValidUrl(item.url) ? (
+                                                                                <a
+                                                                                    href={item.url}
+                                                                                    target="_blank"
+                                                                                    rel="noopener noreferrer"
+                                                                                    className="p-3 bg-cyber/20 hover:bg-cyber/30 text-cyber rounded-xl transition-colors"
+                                                                                    title="فتح الملف"
+                                                                                >
+                                                                                    <FileText size={20} />
+                                                                                </a>
+                                                                            ) : (
+                                                                                <span title="رابط غير آمن" className="p-3 bg-red-500/10 text-red-500 rounded-xl cursor-not-allowed">
+                                                                                    <FileText size={20} />
+                                                                                </span>
+                                                                            )}
                                                                             <button
                                                                                 onClick={async (e) => {
                                                                                     e.stopPropagation();
@@ -511,14 +543,16 @@ export const LectureList = () => {
                                                                     </div>
 
                                                                     <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                        <a
-                                                                            href={item.url}
-                                                                            target="_blank"
-                                                                            rel="noopener noreferrer"
-                                                                            className="p-2 bg-white/20 hover:bg-white/30 rounded-full text-white backdrop-blur-sm"
-                                                                        >
-                                                                            <FileText size={16} />
-                                                                        </a>
+                                                                        {isValidUrl(item.url) ? (
+                                                                            <a
+                                                                                href={item.url}
+                                                                                target="_blank"
+                                                                                rel="noopener noreferrer"
+                                                                                className="p-2 bg-white/20 hover:bg-white/30 rounded-full text-white backdrop-blur-sm"
+                                                                            >
+                                                                                <FileText size={16} />
+                                                                            </a>
+                                                                        ) : null}
                                                                         {canEdit && (
                                                                             <button
                                                                                 onPointerDown={(e) => e.stopPropagation()}

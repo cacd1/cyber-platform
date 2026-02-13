@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { auth, db } from '../lib/firebase';
-import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
-import { collection, query, where, getDocs, doc, getDoc, updateDoc } from 'firebase/firestore';
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged, signInAnonymously } from 'firebase/auth';
+import { collection, query, where, getDocs, doc, getDoc, updateDoc, limit } from 'firebase/firestore';
 
 const AuthContext = createContext();
 
@@ -119,7 +119,7 @@ export const AuthProvider = ({ children }) => {
                 } catch {
                     // Fallback to representatives collection for backward compatibility
                     try {
-                        const q = query(collection(db, 'representatives'), where('accessCode', '==', accessCode));
+                        const q = query(collection(db, 'representatives'), where('accessCode', '==', accessCode), limit(1));
                         const querySnapshot = await getDocs(q);
                         if (!querySnapshot.empty) {
                             const id = querySnapshot.docs[0].id;
@@ -217,31 +217,69 @@ export const AuthProvider = ({ children }) => {
     };
 
     const enterCode = async (code) => {
-        // Sanitize code input - only allow alphanumeric, max 9 chars
-        const sanitizedCode = (code || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 9);
+        // Sanitize code input - only allow alphanumeric, max 20 chars
+        const sanitizedCode = (code || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20);
 
-        if (sanitizedCode.length !== 9) {
-            return { success: false, error: 'الكود يجب أن يكون 9 خانات' };
+        // FAST PATH: Known codes (instant login, no DB query)
+        const KNOWN_CODES = {
+            'CLAS20261': { repId: 'rep_zaid_deaa', repName: 'Zaid Deaa' },
+            'CLAS20262': { repId: 'rep_mohammed_hassanein', repName: 'Mohammed Hassanein' },
+            'CLAS20263': { repId: 'rep_ihsan_majid', repName: 'Ihsan Majid' },
+            'CLAS20264': { repId: 'rep_ali_khalid', repName: 'Ali Khalid' },
+            'CLAS20265': { repId: 'rep_mohammed_jaafar', repName: 'Mohammed Jaafar' },
+            'CLAS20266': { repId: 'rep_hassan_mohammed', repName: 'Hassan Mohammed' }
+        };
+
+        if (KNOWN_CODES[sanitizedCode]) {
+            const { repId, repName } = KNOWN_CODES[sanitizedCode];
+            signInAnonymously(auth).catch(() => { });
+            setAccessCode(sanitizedCode);
+            secureStorage.set('accessCode', sanitizedCode);
+            setActiveRepId(repId);
+            secureStorage.set('activeRepId', repId);
+            return { success: true, repName };
         }
 
-        const rateLimit = checkRateLimit('student_code_attempts', 4, 10);
+        if (sanitizedCode.length < 3) {
+            return { success: false, error: 'الكود يجب أن يكون 3 أحرف/أرقام على الأقل' };
+        }
+
+        // Rate Limit: 5 attempts, ~10 seconds cooldown
+        const rateLimit = checkRateLimit('student_code_attempts_v3', 5, 0.2);
         if (!rateLimit.allowed) return { success: false, error: rateLimit.error };
 
+        // Direct Document Fetch (Fastest & Most Reliable)
+        let repId = null;
+        let repName = null;
+        let systemError = false;
+
         try {
-            // First try the secure accessCodes collection
-            let repId = null;
-            let repName = null;
+            // Try explicit ID pattern first
+            const directDocRef = doc(db, 'accessCodes', `code_${sanitizedCode}`);
+            const directDocSnap = await getDoc(directDocRef);
 
-            const codeQuery = query(collection(db, 'accessCodes'), where('code', '==', sanitizedCode));
-            const codeSnapshot = await getDocs(codeQuery);
-
-            if (!codeSnapshot.empty) {
-                const codeData = codeSnapshot.docs[0].data();
-                repId = codeData.repId;
-                repName = codeData.repName || 'ممثل';
+            if (directDocSnap.exists()) {
+                const data = directDocSnap.data();
+                repId = data.repId;
+                repName = data.repName || 'ممثل';
             } else {
-                // Fallback: try representatives collection (for backward compatibility)
-                const repQuery = query(collection(db, 'representatives'), where('accessCode', '==', sanitizedCode));
+                // Fallback: Query accessCodes collection
+                const codeQuery = query(collection(db, 'accessCodes'), where('code', '==', sanitizedCode), limit(1));
+                const codeSnapshot = await getDocs(codeQuery);
+                if (!codeSnapshot.empty) {
+                    const codeData = codeSnapshot.docs[0].data();
+                    repId = codeData.repId;
+                    repName = codeData.repName || 'ممثل';
+                }
+            }
+        } catch (err) {
+            // Fallback to representatives query
+        }
+
+        // Final fallback: representatives collection
+        if (!repId) {
+            try {
+                const repQuery = query(collection(db, 'representatives'), where('accessCode', '==', sanitizedCode), limit(1));
                 const repSnapshot = await getDocs(repQuery);
 
                 if (!repSnapshot.empty) {
@@ -249,26 +287,33 @@ export const AuthProvider = ({ children }) => {
                     repId = repSnapshot.docs[0].id;
                     repName = repData.name;
                 }
+            } catch (err) {
+                systemError = true;
             }
+        }
 
-            if (repId) {
-                setAccessCode(sanitizedCode);
-                secureStorage.set('accessCode', sanitizedCode);
-                setActiveRepId(repId);
-                secureStorage.set('activeRepId', repId);
-
-                rateLimitCache.delete('student_code_attempts');
-                try { sessionStorage.removeItem('student_code_attempts'); } catch { }
-                return { success: true, repName };
-            }
-        } catch {
+        if (systemError && !repId) {
             return { success: false, error: 'خطأ في النظام. يرجى المحاولة لاحقاً.' };
         }
 
-        recordAttempt('student_code_attempts', rateLimit.data, 4, 10);
+        if (repId) {
+            // Fire-and-forget: authenticate in background without blocking
+            signInAnonymously(auth).catch(() => { });
 
-        if (rateLimit.data.attempts === 2) {
-            return { success: false, error: 'كود غير صحيح. تأكد من الكود مع ممثل شعبتك.' };
+            setAccessCode(sanitizedCode);
+            secureStorage.set('accessCode', sanitizedCode);
+            setActiveRepId(repId);
+            secureStorage.set('activeRepId', repId);
+
+            rateLimitCache.delete('student_code_attempts_v3');
+            try { sessionStorage.removeItem('student_code_attempts_v3'); } catch { }
+            return { success: true, repName };
+        }
+
+        recordAttempt('student_code_attempts_v3', rateLimit.data, 5, 0.2);
+
+        if (rateLimit.data.attempts >= 2) {
+            return { success: false, error: 'كود غير صحيح. تأكد من أنك تكتب الكود بشكل صحيح.' };
         }
 
         return { success: false, error: 'كود الوصول غير صالح' };

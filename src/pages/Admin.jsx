@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+
 import { Shield, UserPlus, Trash2, Users, Key, Mail, User, AlertTriangle, Settings, Moon, Zap } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -9,7 +10,7 @@ import { Modal } from '../components/ui/Modal';
 import { useAuth } from '../context/AuthContext';
 import { ADMIN_EMAIL } from '../constants';
 import { db } from '../lib/firebase';
-import { collection, getDocs, addDoc, deleteDoc, doc, query, where } from 'firebase/firestore';
+import { collection, getDocs, addDoc, deleteDoc, doc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import { dbService as dbServiceImport } from '../services/db';
@@ -18,7 +19,6 @@ import { dbService as dbServiceImport } from '../services/db';
 const sanitizeInput = (text, maxLength = 100) => {
     if (!text || typeof text !== 'string') return '';
     return text
-        .trim()
         .slice(0, maxLength)
         .replace(/<[^>]*>/g, '')
         .replace(/[<>"'`]/g, '');
@@ -116,7 +116,7 @@ export const Admin = () => {
 
         try {
             // Sanitize inputs
-            const sanitizedName = sanitizeInput(newRep.name, 100);
+            const sanitizedName = sanitizeInput(newRep.name.trim(), 100);
             const sanitizedEmail = newRep.email.trim().toLowerCase().slice(0, 100);
             const sanitizedCode = newRep.code.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 9);
 
@@ -129,13 +129,16 @@ export const Admin = () => {
             const userCredential = await createUserWithEmailAndPassword(auth, sanitizedEmail, newRep.password);
 
             // Add to Firestore
-            await addDoc(collection(db, 'representatives'), {
+            // Use setDoc to enforce Doc ID = UID (required for AuthContext profile fetch)
+            const { setDoc, doc } = await import('firebase/firestore'); // ensure import if not available or use existing
+            await setDoc(doc(db, 'representatives', userCredential.user.uid), {
                 uid: userCredential.user.uid,
                 name: sanitizedName,
                 email: sanitizedEmail,
                 accessCode: sanitizedCode,
                 stage: newRep.stage,
-                createdAt: new Date().toISOString()
+                createdAt: new Date().toISOString(),
+                lastSeen: new Date().toISOString()
             });
 
             setSuccess('تم إضافة الممثل بنجاح!');

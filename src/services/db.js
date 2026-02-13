@@ -159,7 +159,6 @@ export const dbService = {
     // Global Settings
     getSettings: async () => {
         try {
-            const docRef = doc(db, 'settings', 'global');
             const docSnap = await getDocs(query(collection(db, 'settings'))); // Check if exists
 
             // Note: Since ID is fixed 'global', we can use getDoc. 

@@ -10,6 +10,7 @@ export const SUBJECTS = [
 ];
 
 // Admin email from environment variable (not hardcoded for security)
+// Admin email from environment variable (not hardcoded for security)
 export const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || '';
 
 

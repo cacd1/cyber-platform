@@ -1,10 +1,11 @@
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+
 import { Shield, Lock, ChevronRight, GraduationCap, Server, Database, Globe } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 
 export const Landing = () => {
-    const navigate = useNavigate();
+
 
     const stages = [
         {
