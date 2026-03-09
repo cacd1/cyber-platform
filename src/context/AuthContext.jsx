@@ -51,9 +51,9 @@ export const AuthProvider = ({ children }) => {
     // Monitor Auth State
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-            if (currentUser) {
+            if (currentUser && !currentUser.isAnonymous) {
+                // Only process REAL logins (not anonymous) - skip anonymous users
                 try {
-                    // Fetch extra profile data - only authenticated users can read their own data
                     const docRef = doc(db, 'representatives', currentUser.uid);
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
@@ -64,9 +64,11 @@ export const AuthProvider = ({ children }) => {
                 } catch {
                     setUser({ uid: currentUser.uid, email: currentUser.email });
                 }
-            } else {
+            } else if (!currentUser) {
+                // Logged out
                 setUser(null);
             }
+            // If anonymous => ignore, don't change user state
             setLoading(false);
         });
         return unsubscribe;
@@ -97,7 +99,8 @@ export const AuthProvider = ({ children }) => {
     }, [user]);
 
     useEffect(() => {
-        if (user?.uid) {
+        // Only update activeRepId for REAL representatives, not anonymous users
+        if (user?.uid && user?.email) {
             setActiveRepId(user.uid);
             secureStorage.set('activeRepId', user.uid);
         }

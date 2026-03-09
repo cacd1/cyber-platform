@@ -177,14 +177,14 @@ export const Home = () => {
                         <ShieldCheck size={32} />
                     </div>
                     <p className="text-gray-300 text-sm mb-2">
-                        ادخل كود الشعبة الذي حصلت عليه من ممثلك (مثال: CLAS20266)
+                        ادخل كود الشعبة الذي حصلت عليه من ممثلك
                     </p>
                     <Input
                         placeholder="CLAS..."
                         value={code}
                         onChange={(e) => setCode(e.target.value.toUpperCase())}
                         className="text-center tracking-widest uppercase text-xl font-cyber"
-                        maxLength={13}
+                        maxLength={9}
                         dir="ltr"
                     />
                     {error && <p className="text-red-500 text-sm">{error}</p>}
