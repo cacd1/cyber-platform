@@ -48,6 +48,17 @@ export const AuthProvider = ({ children }) => {
         return secureStorage.get('activeRepId');
     });
 
+    // Initialize anonymous auth immediately on mount so Firestore reads work from the start
+    useEffect(() => {
+        const currentUser = auth.currentUser;
+        // Only sign in anonymously if no real user is logged in yet
+        if (!currentUser || currentUser.isAnonymous) {
+            signInAnonymously(auth).catch(() => {
+                // Silent fail — anonymous auth is optional (best effort)
+            });
+        }
+    }, []);
+
     // Monitor Auth State
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
