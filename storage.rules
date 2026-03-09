@@ -12,23 +12,17 @@ service firebase.storage {
       return isAuthenticated() && request.auth.token.email == 'nb2@admin.com';
     }
 
-    // Helper: Check if user owns the file (for representatives)
-    // We assume file path includes user ID or metadata has it, 
-    // but for now, we trust Representatives to manage their subject folders logic in UI
-    // and enforce strictly via Admin/Owner checks if possible.
-    // For simplicity and functionality with current structure:
-    // - Authenticated users (Students/Reps) can READ.
-    // - Only Admin or the Uploader can DELETE.
-    // - Only Authenticated users can UPLOAD (with size limits).
+    // Helper: Check if user is NOT an anonymous student (i.e. is Admin or Rep)
+    function isAuthorizedUploader() {
+      return isAuthenticated() && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
 
     match /{allPaths=**} {
       // 1. READ: Must be authenticated (Student with Code OR Rep OR Admin)
       allow read: if isAuthenticated();
 
-      // 2. WRITE/DELETE: Currently specific logic is handled in UI but we enforce Auth here.
-      // Ideally, specific paths per rep would be better, but structure is dynamic.
-      // We at least prevent unauthenticated uploads.
-      allow write: if isAuthenticated() && request.resource.size < 10 * 1024 * 1024; // 10MB limit enforced
+      // 2. WRITE/DELETE: Only Admins and Representatives can write/delete. Students (Anonymous) cannot.
+      allow write: if isAuthorizedUploader() && request.resource.size < 10 * 1024 * 1024; // 10MB limit enforced
     }
   }
 }
