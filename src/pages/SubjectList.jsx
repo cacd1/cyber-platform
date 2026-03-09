@@ -6,23 +6,30 @@ import { Book, Code, Globe, Scale, Users, FileText, Hash, Bell } from 'lucide-re
 import { Card } from '../components/ui/Card';
 import { useAuth } from '../context/AuthContext';
 import { dbService } from '../services/db';
-import { SUBJECTS } from '../constants';
+import { SUBJECTS, SUBJECTS_COURSE2 } from '../constants';
 
 const ICONS = {
     notifications: Bell,
+    notifications2: Bell,
     programming: Code,
+    programming2: Code,
+    networks: Globe,
+    architecture: Book,
+    infosec: Scale,
+    english: FileText,
     cs: Globe,
     ethics: Scale,
     intro: Book,
     rights: Users,
     math: Hash,
+    math2: Hash,
     arabic: FileText
 };
 
-export const SubjectList = () => {
+export const SubjectList = ({ course = 1 }) => {
     const { hasAccessCode, accessCode, user, activeRepId } = useAuth();
     const navigate = useNavigate();
-    const subjects = SUBJECTS;
+    const subjects = course === 2 ? SUBJECTS_COURSE2 : SUBJECTS;
     const [lectureCounts, setLectureCounts] = useState({});
 
     // Determine which rep's content to show
@@ -98,7 +105,7 @@ export const SubjectList = () => {
                         <motion.div key={sub.id} variants={item}>
                             <Card
                                 hover
-                                onClick={() => navigate(`/course1/${sub.id}`)}
+                                onClick={() => navigate(course === 2 ? `/course2/subjects/${sub.id}` : `/course1/${sub.id}`)}
                                 className="h-full flex flex-col gap-4 group hover:bg-white/5"
                             >
                                 <div className="p-3 w-fit rounded-lg bg-cyber/10 text-cyber group-hover:bg-cyber group-hover:text-black transition-colors">

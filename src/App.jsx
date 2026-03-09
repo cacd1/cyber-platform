@@ -8,6 +8,8 @@ import { Home } from './pages/Home';
 import { SubjectList } from './pages/SubjectList';
 import { LectureList } from './pages/LectureList';
 import { Admin } from './pages/Admin';
+import { Course2Hub } from './pages/Course2Hub';
+import { TrainingList } from './pages/TrainingList';
 import ScrollToTop from './components/layout/ScrollToTop';
 
 import { useRegisterSW } from 'virtual:pwa-register/react';
@@ -33,8 +35,15 @@ function App() {
             <Routes>
               <Route path="/" element={<Landing />} />
               <Route path="/home" element={<Home />} />
-              <Route path="/course1" element={<SubjectList />} />
+              <Route path="/course1" element={<SubjectList course={1} />} />
               <Route path="/course1/:subjectId" element={<LectureList />} />
+
+              {/* Semester 2 Routes */}
+              <Route path="/course2" element={<Course2Hub />} />
+              <Route path="/course2/subjects" element={<SubjectList course={2} />} />
+              <Route path="/course2/subjects/:subjectId" element={<LectureList />} />
+              <Route path="/course2/training" element={<TrainingList />} />
+
               <Route path="/ctrl-panel" element={<Admin />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

@@ -20,7 +20,15 @@ export const Home = () => {
         if (hasAccessCode) {
             navigate('/course1');
         } else {
-            setIsCodeModalOpen(true);
+            setIsCodeModalOpen({ open: true, target: '/course1' });
+        }
+    };
+
+    const handleCourse2Click = () => {
+        if (hasAccessCode) {
+            navigate('/course2');
+        } else {
+            setIsCodeModalOpen({ open: true, target: '/course2' });
         }
     };
 
@@ -36,8 +44,8 @@ export const Home = () => {
 
         const result = await enterCode(code);
         if (result.success) {
-            setIsCodeModalOpen(false);
-            navigate('/course1');
+            setIsCodeModalOpen({ open: false, target: '' });
+            navigate(isCodeModalOpen.target || '/course1');
         } else {
             setError(result.error);
         }
@@ -115,15 +123,31 @@ export const Home = () => {
                     </Card>
                 </motion.div>
 
-                {/* Course 2 Card (Locked) */}
+                {/* Course 2 Card (Unlocked) */}
                 <motion.div variants={item} className="h-full">
-                    <Card className="h-full flex flex-col items-center justify-center text-center py-8 opacity-60 grayscale transition-all hover:opacity-80 hover:grayscale-0 cursor-not-allowed border-red-500/10 bg-red-500/5 hover:border-red-500/30">
-                        <div className="mb-4 p-4 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">
-                            <Lock size={32} />
+                    <Card
+                        hover
+                        className="h-full flex flex-col items-center justify-center text-center py-8 group relative overflow-hidden bg-white/5 border-white/10 hover:bg-white/10 hover:border-blue-500/50 backdrop-blur-sm"
+                        onClick={handleCourse2Click}
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-b from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                        <div className="mb-4 p-4 rounded-full bg-blue-500/10 text-blue-400 group-hover:scale-110 group-hover:shadow-[0_0_20px_rgba(59,130,246,0.3)] transition-all duration-300 border border-blue-500/20">
+                            {hasAccessCode ? <Unlock size={32} /> : <Lock size={32} />}
                         </div>
-                        <h2 className="text-xl font-bold text-gray-400 dark:text-white mb-1">الكورس الثاني</h2>
-                        <h3 className="text-xs font-cyber text-red-300 dark:text-red-400 mb-3 tracking-widest">COURSE 2</h3>
-                        <p className="text-gray-400 dark:text-gray-500 text-xs">Locked Content</p>
+
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1 relative z-10">الكورس الثاني</h2>
+                        <h3 className="text-xs font-cyber text-blue-600 dark:text-blue-300 mb-3 relative z-10 tracking-widest font-bold">COURSE 2</h3>
+
+                        <p className="text-gray-600 dark:text-gray-400 text-xs max-w-xs mx-auto mb-4 relative z-10 font-medium dark:font-normal">
+                            {hasAccessCode ? "Access Granted" : "Requires Code"}
+                        </p>
+
+                        <div className="relative z-10 w-32">
+                            <Button className="w-full text-xs py-1.5 bg-blue-600 hover:bg-blue-500">
+                                {hasAccessCode ? "Enter" : "Unlock"}
+                            </Button>
+                        </div>
                     </Card>
                 </motion.div>
 
@@ -144,8 +168,8 @@ export const Home = () => {
 
             {/* Access Code Modal */}
             <Modal
-                isOpen={isCodeModalOpen}
-                onClose={() => setIsCodeModalOpen(false)}
+                isOpen={isCodeModalOpen.open}
+                onClose={() => setIsCodeModalOpen({ open: false, target: '' })}
                 title="ادخل كود شعبتك"
             >
                 <form onSubmit={handleSubmitCode} className="flex flex-col gap-4 text-center">
