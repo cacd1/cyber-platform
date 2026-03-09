@@ -225,10 +225,6 @@ export const AuthProvider = ({ children }) => {
             return { success: false, error: 'الكود يجب أن يكون 3 أحرف/أرقام على الأقل' };
         }
 
-        // Rate Limit: 5 attempts, ~10 seconds cooldown
-        const rateLimit = checkRateLimit('student_code_attempts_v3', 5, 0.2);
-        if (!rateLimit.allowed) return { success: false, error: rateLimit.error };
-
         // Direct Document Fetch (Fastest & Most Reliable)
         let repId = null;
         let repName = null;
@@ -286,18 +282,10 @@ export const AuthProvider = ({ children }) => {
             setActiveRepId(repId);
             secureStorage.set('activeRepId', repId);
 
-            rateLimitCache.delete('student_code_attempts_v3');
-            try { sessionStorage.removeItem('student_code_attempts_v3'); } catch { }
             return { success: true, repName };
         }
 
-        recordAttempt('student_code_attempts_v3', rateLimit.data, 5, 0.2);
-
-        if (rateLimit.data.attempts >= 2) {
-            return { success: false, error: 'كود غير صحيح. تأكد من أنك تكتب الكود بشكل صحيح.' };
-        }
-
-        return { success: false, error: 'كود الوصول غير صالح' };
+        return { success: false, error: 'كود غير صحيح. تأكد من أنك تكتب الكود بشكل صحيح.' };
     };
 
     const exitCode = () => {
