@@ -11,9 +11,25 @@ import { useAuth } from '../context/AuthContext';
 import { ADMIN_EMAIL } from '../constants';
 import { db } from '../lib/firebase';
 import { collection, getDocs, addDoc, deleteDoc, doc } from 'firebase/firestore';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+
+import { createUserWithEmailAndPassword, getAuth, signOut } from 'firebase/auth';
 import { auth } from '../lib/firebase';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import { dbService as dbServiceImport } from '../services/db';
+
+// Initialize a secondary Firebase app for creating users without logging out the admin
+const createSecondaryAuth = () => {
+    const apps = getApps();
+    let secondaryApp;
+    if (apps.length > 0) {
+        // Find existing secondary app or create it using the primary's config
+        secondaryApp = apps.find(app => app.name === 'SecondaryAdminApp');
+        if (!secondaryApp) {
+            secondaryApp = initializeApp(apps[0].options, 'SecondaryAdminApp');
+        }
+    }
+    return secondaryApp ? getAuth(secondaryApp) : null;
+};
 
 // Sanitize text input for security
 const sanitizeInput = (text, maxLength = 100) => {
@@ -125,8 +141,14 @@ export const Admin = () => {
                 return;
             }
 
-            // Create Firebase Auth user
-            const userCredential = await createUserWithEmailAndPassword(auth, sanitizedEmail, newRep.password);
+            // Use Secondary Firebase Auth to create user without logging out the current Admin
+            const secondaryAuth = createSecondaryAuth();
+            if (!secondaryAuth) {
+                setError('فشل في تهيئة أدوات الإضافة');
+                return;
+            }
+
+            const userCredential = await createUserWithEmailAndPassword(secondaryAuth, sanitizedEmail, newRep.password);
 
             // Add to Firestore
             // Use setDoc to enforce Doc ID = UID (required for AuthContext profile fetch)
@@ -140,6 +162,9 @@ export const Admin = () => {
                 createdAt: new Date().toISOString(),
                 lastSeen: new Date().toISOString()
             });
+
+            // Sign out the secondary app so it doesn't hold a session
+            await signOut(secondaryAuth);
 
             setSuccess('تم إضافة الممثل بنجاح!');
             setNewRep({ name: '', email: '', password: '', code: '', stage: activeStageTab });

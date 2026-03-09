@@ -148,18 +148,15 @@ export const AuthProvider = ({ children }) => {
         // Check in-memory cache first (harder to bypass)
         const memoryData = rateLimitCache.get(key) || { attempts: 0, lockoutTime: null };
 
-        // Also check sessionStorage as backup
-        let storageData;
-        try {
-            storageData = JSON.parse(sessionStorage.getItem(key) || '{"attempts": 0, "lockoutTime": null}');
-        } catch {
-            storageData = { attempts: 0, lockoutTime: null };
-        }
+        // Also check sessionStorage and localStorage as backups
+        let sessionData, localData;
+        try { sessionData = JSON.parse(sessionStorage.getItem(key) || '{"attempts": 0, "lockoutTime": null}'); } catch { sessionData = { attempts: 0, lockoutTime: null }; }
+        try { localData = JSON.parse(localStorage.getItem(key) || '{"attempts": 0, "lockoutTime": null}'); } catch { localData = { attempts: 0, lockoutTime: null }; }
 
-        // Use the stricter of the two
+        // Use the strictest of the three
         const data = {
-            attempts: Math.max(memoryData.attempts, storageData.attempts),
-            lockoutTime: Math.max(memoryData.lockoutTime || 0, storageData.lockoutTime || 0) || null
+            attempts: Math.max(memoryData.attempts, sessionData.attempts, localData.attempts),
+            lockoutTime: Math.max(memoryData.lockoutTime || 0, sessionData.lockoutTime || 0, localData.lockoutTime || 0) || null
         };
 
         if (data.lockoutTime && now < data.lockoutTime) {
@@ -174,6 +171,7 @@ export const AuthProvider = ({ children }) => {
             data.lockoutTime = null;
             rateLimitCache.set(key, data);
             try { sessionStorage.setItem(key, JSON.stringify(data)); } catch { }
+            try { localStorage.setItem(key, JSON.stringify(data)); } catch { }
         }
 
         return { allowed: true, data };
@@ -184,9 +182,10 @@ export const AuthProvider = ({ children }) => {
         if (data.attempts >= maxAttempts) {
             data.lockoutTime = Date.now() + cooldownMinutes * 60 * 1000;
         }
-        // Save to both memory and storage
+        // Save to memory, session storage, and local storage to prevent bypassing
         rateLimitCache.set(key, { ...data });
         try { sessionStorage.setItem(key, JSON.stringify(data)); } catch { }
+        try { localStorage.setItem(key, JSON.stringify(data)); } catch { }
     };
 
     const login = async (email, password) => {
@@ -220,25 +219,7 @@ export const AuthProvider = ({ children }) => {
         // Sanitize code input - only allow alphanumeric, max 20 chars
         const sanitizedCode = (code || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20);
 
-        // FAST PATH: Known codes (instant login, no DB query)
-        const KNOWN_CODES = {
-            'CLAS20261': { repId: 'rep_zaid_deaa', repName: 'Zaid Deaa' },
-            'CLAS20262': { repId: 'rep_mohammed_hassanein', repName: 'Mohammed Hassanein' },
-            'CLAS20263': { repId: 'rep_ihsan_majid', repName: 'Ihsan Majid' },
-            'CLAS20264': { repId: 'rep_ali_khalid', repName: 'Ali Khalid' },
-            'CLAS20265': { repId: 'rep_mohammed_jaafar', repName: 'Mohammed Jaafar' },
-            'CLAS20266': { repId: 'rep_hassan_mohammed', repName: 'Hassan Mohammed' }
-        };
 
-        if (KNOWN_CODES[sanitizedCode]) {
-            const { repId, repName } = KNOWN_CODES[sanitizedCode];
-            signInAnonymously(auth).catch(() => { });
-            setAccessCode(sanitizedCode);
-            secureStorage.set('accessCode', sanitizedCode);
-            setActiveRepId(repId);
-            secureStorage.set('activeRepId', repId);
-            return { success: true, repName };
-        }
 
         if (sanitizedCode.length < 3) {
             return { success: false, error: 'الكود يجب أن يكون 3 أحرف/أرقام على الأقل' };

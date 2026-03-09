@@ -46,16 +46,16 @@ service cloud.firestore {
     
     // 3. Representatives: SECURED
     match /representatives/{repId} {
-      allow get: if isAdmin() || (isAuthenticated() && request.auth.uid == repId);
-      allow list: if request.query.limit <= 1;
+      allow get: if isAuthenticated(); // Allow getting specific rep if auth'd (needed to check if code is valid)
+      allow list: if isAdmin(); // ONLY admin can list all reps
       allow create, delete: if isAdmin();
-      allow update: if isAdmin() || (request.auth.uid == repId && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastSeen']));
+      allow update: if isAdmin() || (isAuthenticated() && request.auth.uid == repId && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['lastSeen']));
     }
 
-    // 4. Access Code Verification: Public read with strict query limits
+    // 4. Access Code Verification: SECURED
     match /accessCodes/{codeId} {
-      allow get: if true; 
-      allow list: if request.query.limit <= 1;
+      allow get: if true; // Needed during login when not yet auth'd
+      allow list: if request.query.limit <= 1; // Allow querying for specific code during login
       allow write: if isAdmin();
     }
 
