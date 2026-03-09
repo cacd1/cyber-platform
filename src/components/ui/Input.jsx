@@ -6,7 +6,7 @@ export const Input = ({ className, error, ...props }) => {
         <div className="w-full">
             <input
                 className={twMerge(
-                    "w-full bg-cyber-dark/50 border border-cyber/30 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-cyber focus:ring-1 focus:ring-cyber transition-all",
+                    "w-full bg-white dark:bg-cyber-dark/50 border border-slate-200 dark:border-cyber/30 rounded-lg px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:border-blue-500 dark:focus:border-cyber focus:ring-1 focus:ring-blue-500 dark:focus:ring-cyber transition-all",
                     error && "border-red-500 focus:border-red-500 focus:ring-red-500",
                     className
                 )}

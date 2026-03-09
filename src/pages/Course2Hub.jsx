@@ -29,11 +29,11 @@ export const Course2Hub = () => {
         <div className="flex flex-col gap-6 p-4 md:p-8 min-h-[80vh]">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                 <div>
-                    <h1 className="text-3xl font-cyber text-gray-900 dark:text-white flex items-center gap-3">
-                        <Shield className="text-cyber" size={32} />
+                    <h1 className="text-3xl font-cyber text-slate-900 dark:text-white flex items-center gap-3 font-bold">
+                        <Shield className="text-blue-600 dark:text-cyber" size={32} />
                         الكورس الثاني
                     </h1>
-                    <p className="text-gray-600 dark:text-gray-400 mt-2">مرحباً بك في بوابة الكورس الثاني. اختر القسم الذي تريد تصفحه.</p>
+                    <p className="text-slate-600 dark:text-gray-400 mt-2 font-medium dark:font-normal">مرحباً بك في بوابة الكورس الثاني. اختر القسم الذي تريد تصفحه.</p>
                 </div>
             </div>
 
@@ -48,20 +48,20 @@ export const Course2Hub = () => {
                     <Card
                         hover
                         onClick={() => navigate('/course2/subjects')}
-                        className="h-full flex flex-col items-center justify-center text-center py-12 group relative overflow-hidden bg-gradient-to-br from-cyber/5 to-blue-500/5 border-cyber/20 hover:border-cyber/50 backdrop-blur-sm"
+                        className="h-full flex flex-col items-center justify-center text-center py-12 group relative overflow-hidden bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-cyber/5 dark:to-blue-500/5 border-blue-100 dark:border-cyber/20 hover:border-blue-300 dark:hover:border-cyber/50 backdrop-blur-sm"
                     >
-                        <div className="absolute inset-0 bg-cyber/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="absolute inset-0 bg-blue-100/50 dark:bg-cyber/5 opacity-0 group-hover:opacity-100 transition-opacity" />
 
-                        <div className="mb-6 p-5 rounded-full bg-cyber/10 text-cyber group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(0,240,255,0.4)] transition-all duration-300 border border-cyber/20">
+                        <div className="mb-6 p-5 rounded-full bg-blue-100 dark:bg-cyber/10 text-blue-600 dark:text-cyber group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(59,130,246,0.3)] dark:group-hover:shadow-[0_0_30px_rgba(0,240,255,0.4)] transition-all duration-300 border border-blue-200 dark:border-cyber/20">
                             <BookOpen size={48} />
                         </div>
 
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 relative z-10">المواد الدراسية</h2>
-                        <p className="text-gray-600 dark:text-gray-400 text-sm max-w-xs mx-auto mb-6 relative z-10 font-medium">
+                        <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2 relative z-10">المواد الدراسية</h2>
+                        <p className="text-slate-600 dark:text-gray-400 text-sm max-w-xs mx-auto mb-6 relative z-10 font-medium dark:font-normal">
                             المحاضرات وملفات المواد الأساسية للفصل الثاني
                         </p>
 
-                        <div className="relative z-10 font-bold text-cyber flex items-center gap-1 group-hover:gap-3 transition-all">
+                        <div className="relative z-10 font-bold text-blue-600 dark:text-cyber flex items-center gap-1 group-hover:gap-3 transition-all">
                             تصفح المواد <ChevronRight size={18} />
                         </div>
                     </Card>
@@ -72,20 +72,20 @@ export const Course2Hub = () => {
                     <Card
                         hover
                         onClick={() => navigate('/course2/training')}
-                        className="h-full flex flex-col items-center justify-center text-center py-12 group relative overflow-hidden bg-gradient-to-br from-violet-500/5 to-purple-500/5 border-violet-500/20 hover:border-violet-500/50 backdrop-blur-sm"
+                        className="h-full flex flex-col items-center justify-center text-center py-12 group relative overflow-hidden bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-violet-500/5 dark:to-purple-500/5 border-indigo-100 dark:border-violet-500/20 hover:border-indigo-300 dark:hover:border-violet-500/50 backdrop-blur-sm"
                     >
-                        <div className="absolute inset-0 bg-violet-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="absolute inset-0 bg-indigo-100/50 dark:bg-violet-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
 
-                        <div className="mb-6 p-5 rounded-full bg-violet-500/10 text-violet-400 group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(139,92,246,0.4)] transition-all duration-300 border border-violet-500/20">
+                        <div className="mb-6 p-5 rounded-full bg-indigo-100 dark:bg-violet-500/10 text-indigo-600 dark:text-violet-400 group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(79,70,229,0.3)] dark:group-hover:shadow-[0_0_30px_rgba(139,92,246,0.4)] transition-all duration-300 border border-indigo-200 dark:border-violet-500/20">
                             <MonitorPlay size={48} />
                         </div>
 
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 relative z-10">الكورسات التدريبية</h2>
-                        <p className="text-gray-600 dark:text-gray-400 text-sm max-w-xs mx-auto mb-6 relative z-10 font-medium">
+                        <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2 relative z-10">الكورسات التدريبية</h2>
+                        <p className="text-slate-600 dark:text-gray-400 text-sm max-w-xs mx-auto mb-6 relative z-10 font-medium dark:font-normal">
                             مسارات تعليمية وتدريبات عملية لتطوير المهارات
                         </p>
 
-                        <div className="relative z-10 font-bold text-violet-400 flex items-center gap-1 group-hover:gap-3 transition-all">
+                        <div className="relative z-10 font-bold text-indigo-600 dark:text-violet-400 flex items-center gap-1 group-hover:gap-3 transition-all">
                             استكشف التدريبات <ChevronRight size={18} />
                         </div>
                     </Card>

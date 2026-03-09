@@ -79,10 +79,10 @@ export const SubjectList = ({ course = 1 }) => {
         <div className="flex flex-col gap-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                 <div>
-                    <h1 className="text-3xl font-cyber text-gray-900 dark:text-white">المواد الدراسية</h1>
-                    <p className="text-gray-600 dark:text-gray-400">اختر مادة لعرض المحاضرات</p>
+                    <h1 className="text-3xl font-cyber font-bold text-slate-900 dark:text-white">المواد الدراسية</h1>
+                    <p className="text-slate-600 dark:text-gray-400 font-medium dark:font-normal mt-1">اختر مادة لعرض المحاضرات</p>
                 </div>
-                <div className="bg-cyber/10 text-cyber px-4 py-2 rounded-lg border border-cyber/20 font-mono text-sm">
+                <div className="bg-blue-50 dark:bg-cyber/10 text-blue-700 dark:text-cyber px-4 py-2 rounded-lg border border-blue-200 dark:border-cyber/20 font-mono text-sm shadow-sm">
                     {user ? (
                         <>Representative: <span className="font-bold">{user.name}</span></>
                     ) : (
@@ -106,15 +106,15 @@ export const SubjectList = ({ course = 1 }) => {
                             <Card
                                 hover
                                 onClick={() => navigate(course === 2 ? `/course2/subjects/${sub.id}` : `/course1/${sub.id}`)}
-                                className="h-full flex flex-col gap-4 group hover:bg-white/5"
+                                className="h-full flex flex-col gap-4 group hover:bg-blue-50/50 dark:hover:bg-white/5"
                             >
-                                <div className="p-3 w-fit rounded-lg bg-cyber/10 text-cyber group-hover:bg-cyber group-hover:text-black transition-colors">
+                                <div className="p-3 w-fit rounded-lg bg-blue-100 dark:bg-cyber/10 text-blue-600 dark:text-cyber group-hover:bg-blue-600 dark:group-hover:bg-cyber group-hover:text-white transition-colors">
                                     <Icon size={24} />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-bold text-white mb-1">{sub.name}</h3>
-                                    <p className="text-sm text-gray-400 font-cyber">{sub.nameEn}</p>
-                                    <p className="text-xs text-cyber/70 mt-2">
+                                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">{sub.name}</h3>
+                                    <p className="text-sm text-slate-500 dark:text-gray-400 font-cyber font-medium dark:font-normal">{sub.nameEn}</p>
+                                    <p className="text-xs text-blue-600/80 dark:text-cyber/70 mt-2 font-bold dark:font-normal">
                                         {count > 0 ? `${count} محاضرة` : 'لا توجد محاضرات'}
                                     </p>
                                 </div>

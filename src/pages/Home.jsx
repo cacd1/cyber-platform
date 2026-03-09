@@ -81,10 +81,10 @@ export const Home = () => {
                         className="w-16 h-16 object-contain"
                     />
                 </div>
-                <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-700 dark:from-cyber dark:via-white dark:to-cyber-dim mb-4 drop-shadow-sm dark:drop-shadow-[0_0_15px_rgba(0,240,255,0.3)]">
+                <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-700 via-cyan-600 to-blue-800 dark:from-cyber dark:via-white dark:to-cyber-dim mb-4 drop-shadow-sm dark:drop-shadow-[0_0_15px_rgba(0,240,255,0.3)]">
                     طلاب الامن السيبراني مرحله اولى
                 </h1>
-                <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto font-medium dark:font-normal">
+                <p className="text-slate-600 dark:text-gray-400 text-lg max-w-2xl mx-auto font-medium dark:font-normal">
                     منصة تعلم - Learning Platform
                 </p>
             </motion.div>
@@ -108,10 +108,10 @@ export const Home = () => {
                             {hasAccessCode ? <Unlock size={32} /> : <Lock size={32} />}
                         </div>
 
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1 relative z-10">الكورس الأول</h2>
-                        <h3 className="text-xs font-cyber text-blue-600 dark:text-violet-300 mb-3 relative z-10 tracking-widest font-bold">COURSE 1</h3>
+                        <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-1 relative z-10">الكورس الأول</h2>
+                        <h3 className="text-xs font-cyber text-blue-700 dark:text-violet-300 mb-3 relative z-10 tracking-widest font-bold">COURSE 1</h3>
 
-                        <p className="text-gray-600 dark:text-gray-400 text-xs max-w-xs mx-auto mb-4 relative z-10 font-medium dark:font-normal">
+                        <p className="text-slate-600 dark:text-gray-400 text-xs max-w-xs mx-auto mb-4 relative z-10 font-medium dark:font-normal">
                             {hasAccessCode ? "Access Granted" : "Requires Code"}
                         </p>
 
@@ -136,10 +136,10 @@ export const Home = () => {
                             {hasAccessCode ? <Unlock size={32} /> : <Lock size={32} />}
                         </div>
 
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1 relative z-10">الكورس الثاني</h2>
-                        <h3 className="text-xs font-cyber text-blue-600 dark:text-blue-300 mb-3 relative z-10 tracking-widest font-bold">COURSE 2</h3>
+                        <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-1 relative z-10">الكورس الثاني</h2>
+                        <h3 className="text-xs font-cyber text-blue-700 dark:text-blue-300 mb-3 relative z-10 tracking-widest font-bold">COURSE 2</h3>
 
-                        <p className="text-gray-600 dark:text-gray-400 text-xs max-w-xs mx-auto mb-4 relative z-10 font-medium dark:font-normal">
+                        <p className="text-slate-600 dark:text-gray-400 text-xs max-w-xs mx-auto mb-4 relative z-10 font-medium dark:font-normal">
                             {hasAccessCode ? "Access Granted" : "Requires Code"}
                         </p>
 
@@ -153,13 +153,13 @@ export const Home = () => {
 
                 {/* Additional Resources (Locked) */}
                 <motion.div variants={item} className="h-full">
-                    <Card className="h-full flex flex-col items-center justify-center text-center py-8 opacity-60 grayscale transition-all hover:opacity-80 hover:grayscale-0 cursor-not-allowed border-purple-500/10 bg-purple-500/5 hover:border-purple-500/30">
-                        <div className="mb-4 p-4 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                    <Card className="h-full flex flex-col items-center justify-center text-center py-8 opacity-60 grayscale transition-all hover:opacity-80 hover:grayscale-0 cursor-not-allowed border-purple-500/20 bg-purple-50 dark:border-purple-500/10 dark:bg-purple-500/5 hover:border-purple-500/30">
+                        <div className="mb-4 p-4 rounded-full bg-purple-100 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400 border border-purple-200 dark:border-purple-500/20">
                             <Layers size={32} />
                         </div>
-                        <h2 className="text-xl font-bold text-gray-400 dark:text-white mb-1">ملحقات إضافية</h2>
-                        <h3 className="text-xs font-cyber text-purple-300 dark:text-purple-400 mb-3 tracking-widest">RESOURCES</h3>
-                        <p className="text-gray-400 dark:text-gray-500 text-xs">Coming Soon</p>
+                        <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-1">ملحقات إضافية</h2>
+                        <h3 className="text-xs font-cyber text-purple-600 dark:text-purple-400 mb-3 tracking-widest">RESOURCES</h3>
+                        <p className="text-slate-500 dark:text-gray-500 text-xs">Coming Soon</p>
                     </Card>
                 </motion.div>
             </motion.div>

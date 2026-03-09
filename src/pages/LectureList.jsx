@@ -359,8 +359,8 @@ export const LectureList = () => {
         <div className="flex flex-col gap-6">
             <div className="flex items-center justify-between mb-2">
                 <div>
-                    <h1 className="text-3xl font-cyber text-white">{subject.name}</h1>
-                    <p className="text-gray-400">{subject.nameEn}</p>
+                    <h1 className="text-3xl font-cyber font-bold text-slate-900 dark:text-white">{subject.name}</h1>
+                    <p className="text-slate-500 dark:text-gray-400 font-medium dark:font-normal mt-1">{subject.nameEn}</p>
                 </div>
                 {canEdit && (
                     <Button onClick={() => setIsAddModalOpen(true)} className="flex items-center gap-2">
@@ -371,18 +371,18 @@ export const LectureList = () => {
 
             <div className="flex flex-col gap-4">
                 {lectures.length === 0 ? (
-                    <div className="text-center py-12 bg-white/5 rounded-lg border border-white/10">
-                        <p className="text-gray-400">No lectures found for this subject.</p>
-                        {canEdit && <Button variant="ghost" className="mt-2 text-cyber" onClick={() => setIsAddModalOpen(true)}>Create the first one</Button>}
+                    <div className="text-center py-12 bg-white/80 dark:bg-white/5 rounded-lg border border-slate-200 dark:border-white/10 shadow-sm dark:shadow-none">
+                        <p className="text-slate-600 dark:text-gray-400">No lectures found for this subject.</p>
+                        {canEdit && <Button variant="ghost" className="mt-2 text-blue-600 dark:text-cyber" onClick={() => setIsAddModalOpen(true)}>Create the first one</Button>}
                     </div>
                 ) : (
                     lectures.map(lecture => (
-                        <Card key={lecture.id} className="p-0 overflow-hidden">
+                        <Card key={lecture.id} className="p-0 overflow-hidden bg-white dark:bg-gray-900/40 border-blue-100 dark:border-white/10">
                             <div
-                                className="p-4 flex items-center justify-between bg-black/20 cursor-pointer hover:bg-black/30 transition-colors"
+                                className="p-4 flex items-center justify-between bg-blue-50/50 hover:bg-blue-100/50 dark:bg-black/20 dark:hover:bg-black/30 transition-colors cursor-pointer border-b border-blue-100 dark:border-b-0"
                                 onClick={() => handleToggleLecture(lecture.id)}
                             >
-                                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                     {lecture.name}
                                     {hasNewContent(lecture) && (
                                         <span className="animate-pulse bg-yellow-500 text-black text-[10px] px-1.5 py-0.5 rounded font-bold shadow-[0_0_10px_rgba(234,179,8,0.5)]">
@@ -408,9 +408,9 @@ export const LectureList = () => {
                                         initial={{ height: 0 }}
                                         animate={{ height: 'auto' }}
                                         exit={{ height: 0 }}
-                                        className="overflow-hidden bg-black/10"
+                                        className="overflow-hidden bg-slate-50/50 dark:bg-black/10"
                                     >
-                                        <div className="p-4 border-t border-white/5">
+                                        <div className="p-4 border-t-0 dark:border-t border-white/5">
                                             {lecture.content?.items && lecture.content.items.length > 0 ? (
                                                 <Reorder.Group
                                                     axis="y"
@@ -426,20 +426,20 @@ export const LectureList = () => {
                                                             className="relative"
                                                         >
                                                             {item.type === 'pdf' || item.type === 'file' ? (
-                                                                <div className="flex flex-col gap-2 p-6 bg-gradient-to-r from-cyber/10 to-cyber/5 border border-cyber/20 rounded-2xl group hover:border-cyber/40 transition-all cursor-default">
+                                                                <div className="flex flex-col gap-2 p-6 bg-gradient-to-r from-blue-50 to-white dark:from-cyber/10 dark:to-cyber/5 border border-blue-100 dark:border-cyber/20 rounded-2xl group hover:border-blue-300 dark:hover:border-cyber/40 transition-all cursor-default shadow-sm dark:shadow-none">
                                                                     <div className="flex items-center justify-between">
                                                                         <div className="flex items-center gap-4 flex-1 min-w-0">
                                                                             {canEdit && (
-                                                                                <div className="text-gray-500 cursor-grab active:cursor-grabbing p-1">
+                                                                                <div className="text-slate-400 dark:text-gray-500 cursor-grab active:cursor-grabbing p-1">
                                                                                     <GripVertical size={24} />
                                                                                 </div>
                                                                             )}
-                                                                            <div className="p-3 bg-cyber/20 rounded-xl">
-                                                                                <FileText size={32} className="text-cyber" />
+                                                                            <div className="p-3 bg-blue-100 dark:bg-cyber/20 rounded-xl">
+                                                                                <FileText size={32} className="text-blue-600 dark:text-cyber" />
                                                                             </div>
                                                                             <div className="flex-1 min-w-0">
-                                                                                <p className="text-white text-lg font-bold truncate">{item.name}</p>
-                                                                                <p className="text-gray-400 text-sm">PDF / Document</p>
+                                                                                <p className="text-slate-900 dark:text-white text-lg font-bold truncate">{item.name}</p>
+                                                                                <p className="text-slate-500 dark:text-gray-400 text-sm">PDF / Document</p>
                                                                             </div>
                                                                         </div>
                                                                         <div className="flex items-center gap-3">
@@ -499,19 +499,19 @@ export const LectureList = () => {
                                                                     </div>
                                                                 </div>
                                                             ) : item.type === 'note' ? (
-                                                                <div className="relative group p-6 bg-gradient-to-r from-blue-500/10 to-blue-500/5 border border-blue-500/20 rounded-2xl hover:border-blue-500/40 transition-all cursor-default">
+                                                                <div className="relative group p-6 bg-gradient-to-r from-blue-50 to-white dark:from-blue-500/10 dark:to-blue-500/5 border border-blue-200 dark:border-blue-500/20 rounded-2xl hover:border-blue-300 dark:hover:border-blue-500/40 transition-all cursor-default shadow-sm dark:shadow-none">
                                                                     <div className="flex items-start gap-4">
                                                                         {canEdit && (
-                                                                            <div className="text-gray-500 cursor-grab active:cursor-grabbing p-1 mt-1">
+                                                                            <div className="text-slate-400 dark:text-gray-500 cursor-grab active:cursor-grabbing p-1 mt-1">
                                                                                 <GripVertical size={24} />
                                                                             </div>
                                                                         )}
-                                                                        <div className="p-3 bg-blue-500/20 rounded-xl h-fit">
-                                                                            <Type size={32} className="text-blue-400" />
+                                                                        <div className="p-3 bg-blue-100 dark:bg-blue-500/20 rounded-xl h-fit">
+                                                                            <Type size={32} className="text-blue-500 dark:text-blue-400" />
                                                                         </div>
                                                                         <div className="flex-1 min-w-0 pt-1">
-                                                                            <p className="text-white text-lg whitespace-pre-wrap leading-relaxed">{item.text}</p>
-                                                                            <p className="text-gray-400 text-xs mt-2">ملاحظة</p>
+                                                                            <p className="text-slate-800 dark:text-white text-lg whitespace-pre-wrap leading-relaxed">{item.text}</p>
+                                                                            <p className="text-slate-400 dark:text-gray-400 text-xs mt-2 font-bold dark:font-normal">ملاحظة</p>
                                                                         </div>
                                                                         {canEdit && (
                                                                             <button

@@ -39,23 +39,23 @@ export const Layout = ({ children }) => {
             {/* Background Elements */}
             {/* Background Elements */}
             <div className="fixed inset-0 z-0 pointer-events-none transform-gpu">
-                {/* Background Base: Deep Obsidian (Dark) vs Soft Blue-White (Light) */}
-                <div className="absolute inset-0 bg-[#f0f4f8] dark:bg-[#02020a] transition-colors duration-500" />
+                {/* Background Base: Deep Obsidian (Dark) vs Slate (Light) */}
+                <div className="absolute inset-0 bg-slate-50 dark:bg-[#02020a] transition-colors duration-500" />
 
                 {/* Cyber Grid - Only for Dark Mode */}
                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-0 dark:opacity-20 mix-blend-overlay" />
 
                 {/* Gradients - Soft Cyan/Blue (Light) vs Deep Violet (Dark) */}
-                <div className="absolute inset-0 bg-gradient-to-br from-cyan-50 via-white to-blue-50 dark:from-violet-900/20 dark:via-transparent dark:to-purple-900/20 transition-all duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-100 via-white to-cyan-50 dark:from-violet-900/20 dark:via-transparent dark:to-purple-900/20 transition-all duration-500" />
 
                 {/* Animated Orbs - Soft & Gaussian in Light Mode */}
                 <div className="absolute top-[-20%] left-[-10%] w-[80%] h-[80%] rounded-full blur-[120px] will-change-transform
-                    bg-cyan-200/40 dark:bg-violet-600/20 
-                    mix-blend-normal dark:mix-blend-screen transition-colors duration-500 opacity-60 dark:opacity-100"
+                    bg-blue-300/40 dark:bg-violet-600/20 
+                    mix-blend-normal dark:mix-blend-screen transition-colors duration-500 opacity-80 dark:opacity-100"
                 />
                 <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full blur-[100px] will-change-transform
-                    bg-blue-200/40 dark:bg-purple-600/10 
-                    opacity-50 dark:opacity-100 transition-colors duration-500"
+                    bg-cyan-300/40 dark:bg-purple-600/10 
+                    opacity-70 dark:opacity-100 transition-colors duration-500"
                 />
 
                 {/* Vignette - Dark Only */}
