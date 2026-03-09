@@ -8,7 +8,7 @@ import { Modal } from '../components/ui/Modal';
 import { Input } from '../components/ui/Input';
 import { useAuth } from '../context/AuthContext';
 import { dbService } from '../services/db';
-import { SUBJECTS } from '../constants';
+import { SUBJECTS, SUBJECTS_COURSE2 } from '../constants';
 
 const extractYoutubeId = (url) => {
     const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
@@ -61,7 +61,8 @@ export const LectureList = () => {
     const [youtubeInputs, setYoutubeInputs] = useState({});
     const [noteInputs, setNoteInputs] = useState({});
 
-    const subject = SUBJECTS.find(s => s.id === subjectId);
+    // Combine both subject lists so both courses work properly
+    const subject = SUBJECTS.find(s => s.id === subjectId) || SUBJECTS_COURSE2.find(s => s.id === subjectId);
 
     const effectiveRepId = user ? user.uid : activeRepId;
 
