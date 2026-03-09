@@ -177,14 +177,14 @@ export const Home = () => {
                         <ShieldCheck size={32} />
                     </div>
                     <p className="text-gray-300 text-sm mb-2">
-                        ادخل الكود المكون من 9 خانات الذي حصلت عليه من ممثل شعبتك
+                        اكتب الأرقام فقط (مثال: <span className="font-mono text-cyber font-bold">20266</span>) أو الكود كامل (مثال: <span className="font-mono text-cyber font-bold">CLAS20266</span>)
                     </p>
                     <Input
-                        placeholder="اكتب هنا"
+                        placeholder="20266 أو CLAS20266"
                         value={code}
                         onChange={(e) => setCode(e.target.value.toUpperCase())}
                         className="text-center tracking-widest uppercase text-xl font-cyber"
-                        maxLength={9}
+                        maxLength={13}
                         dir="ltr"
                     />
                     {error && <p className="text-red-500 text-sm">{error}</p>}

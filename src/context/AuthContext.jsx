@@ -219,9 +219,10 @@ export const AuthProvider = ({ children }) => {
         // Sanitize code input - only allow alphanumeric, max 20 chars
         const sanitizedCode = (code || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 20);
 
+        // Auto-prepend 'CLAS' if the student didn't type it
+        const fullCode = sanitizedCode.startsWith('CLAS') ? sanitizedCode : 'CLAS' + sanitizedCode;
 
-
-        if (sanitizedCode.length < 3) {
+        if (fullCode.length < 6) {
             return { success: false, error: 'الكود يجب أن يكون 3 أحرف/أرقام على الأقل' };
         }
 
@@ -232,7 +233,7 @@ export const AuthProvider = ({ children }) => {
 
         try {
             // Try explicit ID pattern first
-            const directDocRef = doc(db, 'accessCodes', `code_${sanitizedCode}`);
+            const directDocRef = doc(db, 'accessCodes', `code_${fullCode}`);
             const directDocSnap = await getDoc(directDocRef);
 
             if (directDocSnap.exists()) {
@@ -241,7 +242,7 @@ export const AuthProvider = ({ children }) => {
                 repName = data.repName || 'ممثل';
             } else {
                 // Fallback: Query accessCodes collection
-                const codeQuery = query(collection(db, 'accessCodes'), where('code', '==', sanitizedCode), limit(1));
+                const codeQuery = query(collection(db, 'accessCodes'), where('code', '==', fullCode), limit(1));
                 const codeSnapshot = await getDocs(codeQuery);
                 if (!codeSnapshot.empty) {
                     const codeData = codeSnapshot.docs[0].data();
@@ -256,7 +257,7 @@ export const AuthProvider = ({ children }) => {
         // Final fallback: representatives collection
         if (!repId) {
             try {
-                const repQuery = query(collection(db, 'representatives'), where('accessCode', '==', sanitizedCode), limit(1));
+                const repQuery = query(collection(db, 'representatives'), where('accessCode', '==', fullCode), limit(1));
                 const repSnapshot = await getDocs(repQuery);
 
                 if (!repSnapshot.empty) {
@@ -277,8 +278,8 @@ export const AuthProvider = ({ children }) => {
             // Fire-and-forget: authenticate in background without blocking
             signInAnonymously(auth).catch(() => { });
 
-            setAccessCode(sanitizedCode);
-            secureStorage.set('accessCode', sanitizedCode);
+            setAccessCode(fullCode);
+            secureStorage.set('accessCode', fullCode);
             setActiveRepId(repId);
             secureStorage.set('activeRepId', repId);
 
